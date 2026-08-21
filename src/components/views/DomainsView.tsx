@@ -167,13 +167,15 @@ export function DomainsView() {
     return d.toLocaleDateString();
   };
 
-  // Filtered list
-  const filteredDomains = domains.filter((d) => {
-    const matchesSearch = d.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ? true : statusFilter === "active" ? d.status === "active" : d.status !== "active";
-    return matchesSearch && matchesStatus;
-  });
+  // Filtered list (sorted DESC by creation date)
+  const filteredDomains = domains
+    .filter((d) => {
+      const matchesSearch = d.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" ? true : statusFilter === "active" ? d.status === "active" : d.status !== "active";
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
   // Pagination Calculations
   const totalPages = Math.ceil(filteredDomains.length / pageSize) || 1;

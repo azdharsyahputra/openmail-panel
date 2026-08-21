@@ -235,14 +235,16 @@ export function MailboxesView() {
     return mb.toFixed(1) + " MB";
   };
 
-  // Filtered Mailboxes
-  const filteredMailboxes = mailboxes.filter((mb) => {
-    const matchesSearch = mb.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDomain = domainFilter === "all" ? true : mb.email.endsWith(`@${domainFilter}`);
-    const matchesStatus =
-      statusFilter === "all" ? true : statusFilter === "active" ? mb.status === "active" : mb.status !== "active";
-    return matchesSearch && matchesDomain && matchesStatus;
-  });
+  // Filtered Mailboxes (sorted DESC by creation date)
+  const filteredMailboxes = mailboxes
+    .filter((mb) => {
+      const matchesSearch = mb.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesDomain = domainFilter === "all" ? true : mb.email.endsWith(`@${domainFilter}`);
+      const matchesStatus =
+        statusFilter === "all" ? true : statusFilter === "active" ? mb.status === "active" : mb.status !== "active";
+      return matchesSearch && matchesDomain && matchesStatus;
+    })
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
   // Pagination Calculations
   const totalPages = Math.ceil(filteredMailboxes.length / pageSize) || 1;
