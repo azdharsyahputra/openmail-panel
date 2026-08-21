@@ -473,26 +473,64 @@ export function DomainsView() {
                   <p className="text-zinc-500 font-sans text-xs">
                     Configure these authoritative DNS records at your domain registrar:
                   </p>
-                  {dnsData?.records && dnsData.records.length > 0 ? (
-                    dnsData.records.map((rec, i) => (
-                      <div key={i} className="p-3 bg-zinc-50 rounded-lg border border-zinc-200 space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <span className="font-bold text-zinc-900 uppercase">{rec.type} Record</span>
-                          <span className="text-[10px] text-zinc-400">{rec.name}</span>
+                  {dnsData ? (
+                    (() => {
+                      const records = dnsData.records || [];
+                      if (records.length === 0) {
+                        if (dnsData.mx) {
+                          records.push({
+                            type: "MX",
+                            name: dnsData.mx.host || "@",
+                            value: `Priority ${dnsData.mx.priority || 10} -> ${dnsData.mx.value}`,
+                          });
+                        }
+                        if (dnsData.spf) {
+                          records.push({
+                            type: "TXT (SPF)",
+                            name: dnsData.spf.host || "@",
+                            value: dnsData.spf.value,
+                          });
+                        }
+                        if (dnsData.dmarc) {
+                          records.push({
+                            type: "TXT (DMARC)",
+                            name: dnsData.dmarc.host || "_dmarc",
+                            value: dnsData.dmarc.value,
+                          });
+                        }
+                        if (dnsData.dkim) {
+                          records.push({
+                            type: "TXT (DKIM)",
+                            name: dnsData.dkim.host || "default._domainkey",
+                            value: dnsData.dkim.value,
+                          });
+                        }
+                      }
+
+                      if (records.length === 0) {
+                        return <div className="p-6 text-center text-zinc-400 font-sans">No DNS records found for this domain.</div>;
+                      }
+
+                      return records.map((rec, i) => (
+                        <div key={i} className="p-3 bg-zinc-50 rounded-lg border border-zinc-200 space-y-1.5">
+                          <div className="flex justify-between items-center">
+                            <span className="font-bold text-zinc-900 uppercase">{rec.type || "TXT"} Record</span>
+                            <span className="text-[10px] text-zinc-400 font-mono">{rec.name || "@"}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 p-2 bg-white rounded border border-zinc-200/80">
+                            <code className="text-zinc-700 break-all text-[11px] font-mono">{rec.value}</code>
+                            <button
+                              onClick={() => copyToClipboard(rec.value, `rec-${i}`)}
+                              className="p-1 text-zinc-400 hover:text-zinc-800 shrink-0 cursor-pointer"
+                            >
+                              {copiedKey === `rec-${i}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2 p-2 bg-white rounded border border-zinc-200/80">
-                          <code className="text-zinc-700 break-all text-[11px]">{rec.value}</code>
-                          <button
-                            onClick={() => copyToClipboard(rec.value, `rec-${i}`)}
-                            className="p-1 text-zinc-400 hover:text-zinc-800 shrink-0 cursor-pointer"
-                          >
-                            {copiedKey === `rec-${i}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </div>
-                    ))
+                      ));
+                    })()
                   ) : (
-                    <div className="p-6 text-center text-zinc-400">Loading DNS records...</div>
+                    <div className="p-6 text-center text-zinc-400 font-sans">Loading DNS records...</div>
                   )}
                 </div>
               )}

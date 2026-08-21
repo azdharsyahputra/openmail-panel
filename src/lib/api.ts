@@ -27,16 +27,22 @@ export interface DomainItem {
 }
 
 export interface DNSRecord {
-  type: string;
-  name: string;
+  type?: string;
+  name?: string;
+  host?: string;
   value: string;
-  status: string;
+  priority?: number;
+  status?: string;
 }
 
 export interface DomainDNSResponse {
   domain: string;
-  records: DNSRecord[];
-  valid: boolean;
+  mx?: DNSRecord;
+  spf?: DNSRecord;
+  dmarc?: DNSRecord;
+  dkim?: DNSRecord | null;
+  records?: DNSRecord[];
+  valid?: boolean;
 }
 
 export interface DKIMKeyItem {
