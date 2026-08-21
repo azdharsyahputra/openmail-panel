@@ -508,17 +508,21 @@ export function DomainsView() {
 
                       const list: ExpandedRecord[] = [];
 
-                      if (dnsData.a) {
-                        const h = normalizeHost(dnsData.a.host || "mail");
-                        list.push({
-                          type: "A",
-                          host: h,
-                          value: dnsData.a.value,
-                          description: `Points mail.${selectedDomain} directly to your MailOpen server IP address.`,
-                          note: `Enter '${h}' in Cloudflare/Registrar (Must be 'DNS Only' / unproxied).`,
-                        });
-                      }
+                      // 1. A Record (Server IP)
+                      const aRecord = dnsData.a || {
+                        type: "A",
+                        host: "mail",
+                        value: "157.20.254.39",
+                      };
+                      list.push({
+                        type: "A",
+                        host: normalizeHost(aRecord.host || "mail"),
+                        value: aRecord.value || "157.20.254.39",
+                        description: `Points mail.${selectedDomain} directly to your MailOpen server IP address.`,
+                        note: "Enter 'mail' in Cloudflare/Registrar (Must be 'DNS Only' / unproxied).",
+                      });
 
+                      // 2. MX Record
                       if (dnsData.mx) {
                         const h = normalizeHost(dnsData.mx.host || "@");
                         list.push({
@@ -530,23 +534,33 @@ export function DomainsView() {
                         });
                       }
 
+                      // 3. SPF TXT Record (with IP4)
                       if (dnsData.spf) {
                         const h = normalizeHost(dnsData.spf.host || "@");
+                        let val = dnsData.spf.value;
+                        if (!val || val === "v=spf1 mx ~all") {
+                          val = `v=spf1 a mx ip4:${aRecord.value || "157.20.254.39"} ~all`;
+                        }
                         list.push({
                           type: "TXT (SPF)",
                           host: h,
-                          value: dnsData.spf.value,
+                          value: val,
                           description: `Authorizes MailOpen IP servers to send emails on behalf of ${selectedDomain} and prevents email spoofing.`,
                           note: "Enter @ or leave blank as the Host Name.",
                         });
                       }
 
+                      // 4. DMARC TXT Record (with quarantine & rua)
                       if (dnsData.dmarc) {
                         const h = normalizeHost(dnsData.dmarc.host || "_dmarc");
+                        let val = dnsData.dmarc.value;
+                        if (!val || val === "v=DMARC1; p=none") {
+                          val = `v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@${selectedDomain}`;
+                        }
                         list.push({
                           type: "TXT (DMARC)",
                           host: h,
-                          value: dnsData.dmarc.value,
+                          value: val,
                           description: `Enforces RFC 7489 policy alignment and requests aggregate delivery reports for unauthenticated emails.`,
                           note: `Enter '${h}' into Cloudflare / GoDaddy / Namecheap (do NOT add .${selectedDomain} suffix).`,
                         });
