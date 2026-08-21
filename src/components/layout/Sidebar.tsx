@@ -58,11 +58,11 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
   ];
 
   return (
-    <aside className="w-56 h-full pb-2 flex flex-col justify-between select-none shrink-0 overflow-y-auto pr-1">
-      <div className="space-y-4">
+    <aside className="w-64 h-full pb-2 flex flex-col justify-between select-none shrink-0 overflow-y-auto pr-1.5">
+      <div className="space-y-5">
         {navSections.map((section, sIdx) => (
-          <div key={sIdx} className="space-y-0.5">
-            <div className="px-3 py-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider font-mono">
+          <div key={sIdx} className="space-y-1">
+            <div className="px-3.5 py-1 text-xs font-semibold text-zinc-400 uppercase tracking-wider font-mono">
               {section.title}
             </div>
             {section.items.map((item) => {
@@ -72,13 +72,13 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                     isActive
                       ? "bg-zinc-950 text-white shadow-xs"
                       : "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-zinc-400"}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-zinc-400"}`} />
                   <span>{item.label}</span>
                 </button>
               );
@@ -87,12 +87,12 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
         ))}
       </div>
 
-      <div className="p-3 bg-white rounded-xl border border-zinc-200/80 shadow-2xs text-[11px] font-mono text-zinc-500 space-y-1">
-        <div className="flex justify-between">
+      <div className="p-4 bg-white rounded-xl border border-zinc-200/80 shadow-2xs text-xs font-mono text-zinc-500 space-y-1.5">
+        <div className="flex justify-between items-center">
           <span>Engine</span>
           <span className="font-semibold text-zinc-800">v0.9.0-GA</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           <span>Control Plane</span>
           <span className="text-zinc-950 font-semibold">W3.3 Active</span>
         </div>
