@@ -6,15 +6,7 @@ import { useToast } from "@/components/ui/Toast";
 import {
   RefreshCw,
   Play,
-  KeyRound,
-  ShieldCheck,
-  Users,
   CheckCircle2,
-  Lock,
-  ArrowRight,
-  Shield,
-  Layers,
-  Sparkles,
 } from "lucide-react";
 
 export function IdentityView() {
@@ -101,121 +93,64 @@ export function IdentityView() {
         </div>
       )}
 
-      {/* Top 3 Identity Cards Grid */}
-      <div className="shrink-0 grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Top 3 Identity Status Cards (Minimalist telemetry style) */}
+      <div className="shrink-0 grid grid-cols-1 md:grid-cols-3 gap-3.5">
         {/* Card 1: Directory Provider */}
-        <div className="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-col justify-between space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
-                <KeyRound className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-zinc-950">Directory Provider</span>
-            </div>
+        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Directory Provider</span>
             <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] font-mono font-semibold">
               CONNECTED
             </span>
           </div>
-
-          <div className="space-y-1.5 font-mono text-xs text-zinc-600">
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Server:</span>
-              <span className="text-zinc-900 font-semibold">OpenLDAP / AD</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Port & Transport:</span>
-              <span className="text-zinc-900">Port 389 (StartTLS)</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Security Invariant:</span>
-              <span className="text-emerald-700 font-semibold">Fail-Closed Enforced</span>
-            </div>
+          <div>
+            <div className="text-sm font-bold text-zinc-950 font-mono">OpenLDAP / Active Directory</div>
+            <div className="text-[11px] text-zinc-500 font-sans mt-0.5">Port 389 (StartTLS) · Fail-Closed Enforced</div>
           </div>
         </div>
 
-        {/* Card 2: Security & RBAC Scopes */}
-        <div className="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-col justify-between space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-zinc-950">RBAC Hierarchy</span>
-            </div>
+        {/* Card 2: RBAC Policy */}
+        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Access Control</span>
             <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 text-[10px] font-mono font-semibold">
               3 ROLES ACTIVE
             </span>
           </div>
-
-          <div className="space-y-1.5 font-mono text-xs text-zinc-600">
-            <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Admin Scope:</span>
-              <span className="px-1.5 py-0.2 rounded border bg-purple-50 text-purple-700 border-purple-200 text-[10px] font-bold">
-                FULL ACCESS
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Operator Scope:</span>
-              <span className="px-1.5 py-0.2 rounded border bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold">
-                QUEUE & MAILBOX
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Auditor Scope:</span>
-              <span className="px-1.5 py-0.2 rounded border bg-zinc-100 text-zinc-700 border-zinc-200 text-[10px] font-bold">
-                READ-ONLY AUDIT
-              </span>
-            </div>
+          <div>
+            <div className="text-sm font-bold text-zinc-950 font-mono">Role-Based Access Control</div>
+            <div className="text-[11px] text-zinc-500 font-sans mt-0.5">ADMIN · OPERATOR · AUDITOR Scopes</div>
           </div>
         </div>
 
-        {/* Card 3: Auto-Provisioning Engine */}
-        <div className="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-col justify-between space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
-                <Users className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-zinc-950">Provisioning Engine</span>
-            </div>
-            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] font-mono font-semibold">
+        {/* Card 3: Provisioning Engine */}
+        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Provisioning Engine</span>
+            <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 text-[10px] font-mono font-semibold">
               AUTO-PROVISION
             </span>
           </div>
-
-          <div className="space-y-1.5 font-mono text-xs text-zinc-600">
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Dovecot Sync:</span>
-              <span className="text-zinc-900 font-semibold">Maildir On-Demand</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Default Quota:</span>
-              <span className="text-zinc-900">1024 MB (Configurable)</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Account Lifecycle:</span>
-              <span className="text-emerald-700 font-semibold">Auto-Suspend on Deletion</span>
-            </div>
+          <div>
+            <div className="text-sm font-bold text-zinc-950 font-mono">Dovecot Maildir Sync</div>
+            <div className="text-[11px] text-zinc-500 font-sans mt-0.5">1024 MB Default · Auto-Suspend Lifecycle</div>
           </div>
         </div>
       </div>
 
-      {/* RBAC Group Mapping Matrix Card */}
+      {/* RBAC Group Mapping Table */}
       <div className="shrink-0 rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs">
         <div className="px-5 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-          <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-zinc-700" />
-            <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
-              LDAP Group $\rightarrow$ Control Plane Role Mapping
-            </h2>
-          </div>
+          <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
+            LDAP Group $\rightarrow$ Role Mapping
+          </h2>
           <span className="text-zinc-400 text-[11px] font-mono">Real-time Group Evaluation</span>
         </div>
 
         <table className="w-full text-left text-xs font-mono">
           <thead className="bg-zinc-50/80 border-b border-zinc-200 text-zinc-500 uppercase text-[10px]">
             <tr>
-              <th className="py-3 px-6 text-left">Directory Distinguished Name (DN)</th>
+              <th className="py-3 px-6 text-left">Directory Group (DN)</th>
               <th className="py-3 px-4 w-36 text-center">Assigned Role</th>
               <th className="py-3 px-6 text-left">Authorized Scope & Permissions</th>
             </tr>
@@ -239,7 +174,7 @@ export function IdentityView() {
                 cn=mail-operators,ou=groups,dc=mailopen,dc=internal
               </td>
               <td className="py-3 px-4 text-center">
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-700 border border-indigo-200">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-sky-500/10 text-sky-700 border border-sky-200">
                   OPERATOR
                 </span>
               </td>
@@ -264,16 +199,13 @@ export function IdentityView() {
         </table>
       </div>
 
-      {/* Directory Synchronization Console Card */}
+      {/* Directory Synchronization Console */}
       <div className="shrink-0 rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-600" />
-            <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
-              Directory Synchronization Console
-            </h2>
-          </div>
-          <span className="text-zinc-500 text-[11px] font-mono">LDAP $\rightarrow$ PostgreSQL Sync Engine</span>
+          <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
+            Directory Synchronization Console
+          </h2>
+          <span className="text-zinc-400 text-[11px] font-mono">LDAP $\rightarrow$ PostgreSQL Sync Engine</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
@@ -292,7 +224,7 @@ export function IdentityView() {
           </div>
 
           {/* Checkbox Options */}
-          <div className="md:col-span-4 flex items-center gap-4 text-xs">
+          <div className="md:col-span-4 flex items-center gap-4 text-xs pb-1">
             <label className="flex items-center gap-2 text-zinc-700 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -327,7 +259,7 @@ export function IdentityView() {
           </div>
         </div>
 
-        {/* Sync Report Results Card */}
+        {/* Sync Report Results */}
         {syncReport && (
           <div className="p-4 bg-zinc-50/70 border border-zinc-200/80 rounded-2xl text-xs font-mono space-y-3 mt-4">
             <div className="flex justify-between items-center font-bold text-zinc-800 border-b border-zinc-200 pb-2">
