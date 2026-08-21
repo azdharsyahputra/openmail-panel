@@ -191,7 +191,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
               <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center">
                 <HardDrive className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-zinc-700">Storage Usage</span>
+              <span className="text-xs font-semibold text-zinc-700">Maildir Storage</span>
             </div>
             <span className="text-[11px] font-mono font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
               {storagePercent}% used
@@ -201,7 +201,9 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
             <div className="text-2xl font-bold text-zinc-950 font-mono tracking-tight">
               {formatBytes(totalUsedBytes)}
             </div>
-            <div className="text-[11px] text-zinc-400 font-mono mt-0.5">of {formatBytes(totalQuotaBytes)} pool</div>
+            <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
+              of {formatBytes(totalQuotaBytes)} allocated quota
+            </div>
           </div>
         </div>
       </div>
