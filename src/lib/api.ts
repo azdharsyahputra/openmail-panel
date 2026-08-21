@@ -386,6 +386,20 @@ class ApiClient {
     });
   }
 
+  public async updateMailboxQuota(email: string, quotaMB: number): Promise<void> {
+    const quotaBytes = quotaMB * 1024 * 1024;
+    return this.request<void>(`/api/v1/mailboxes/${encodeURIComponent(email)}/quota`, {
+      method: "PUT",
+      body: JSON.stringify({ quota_bytes: quotaBytes }),
+    });
+  }
+
+  public async reconcileMailboxQuota(email: string): Promise<void> {
+    return this.request<void>(`/api/v1/mailboxes/${encodeURIComponent(email)}/quota/reconcile`, {
+      method: "POST",
+    });
+  }
+
   public async getAliases(email: string): Promise<AliasItem[]> {
     const res = await this.request<{ data?: AliasItem[]; aliases?: AliasItem[] } | AliasItem[]>(
       `/api/v1/mailboxes/${encodeURIComponent(email)}/aliases`

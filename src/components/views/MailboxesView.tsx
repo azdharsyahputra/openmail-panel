@@ -51,6 +51,48 @@ export function MailboxesView() {
   const [newAlias, setNewAlias] = useState("");
   const [addingAlias, setAddingAlias] = useState(false);
 
+  // Quota Edit Modal
+  const [quotaEditMailbox, setQuotaEditMailbox] = useState<MailboxItem | null>(null);
+  const [editQuotaMB, setEditQuotaMB] = useState(1024);
+  const [updatingQuota, setUpdatingQuota] = useState(false);
+  const [reconcilingQuota, setReconcilingQuota] = useState(false);
+
+  const openQuotaModal = (mb: MailboxItem) => {
+    setQuotaEditMailbox(mb);
+    setEditQuotaMB(mb.quota_bytes ? Math.round(mb.quota_bytes / (1024 * 1024)) : 1024);
+  };
+
+  const handleSaveQuota = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quotaEditMailbox) return;
+    try {
+      setUpdatingQuota(true);
+      await api.updateMailboxQuota(quotaEditMailbox.email, editQuotaMB);
+      toast.success("Quota Updated", `Set storage limit for ${quotaEditMailbox.email} to ${editQuotaMB} MB.`);
+      setQuotaEditMailbox(null);
+      await loadData();
+    } catch (err: unknown) {
+      toast.error("Failed to Update Quota", err instanceof Error ? err.message : "Quota update failed");
+    } finally {
+      setUpdatingQuota(false);
+    }
+  };
+
+  const handleReconcileQuota = async () => {
+    if (!quotaEditMailbox) return;
+    try {
+      setReconcilingQuota(true);
+      await api.reconcileMailboxQuota(quotaEditMailbox.email);
+      toast.success("Storage Reconciled", `Rescanned Maildir disk usage for ${quotaEditMailbox.email}.`);
+      setQuotaEditMailbox(null);
+      await loadData();
+    } catch (err: unknown) {
+      toast.error("Reconcile Failed", err instanceof Error ? err.message : "Failed to reconcile storage");
+    } finally {
+      setReconcilingQuota(false);
+    }
+  };
+
   const loadData = async (notify = false) => {
     try {
       setLoading(true);
@@ -350,9 +392,9 @@ export function MailboxesView() {
                           {mb.identity_provider || "local"}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="space-y-1 max-w-36 mx-auto font-mono text-[11px]">
-                          <div className="flex justify-between text-zinc-600 text-[10px]">
+                      <td className="py-3 px-4 text-center cursor-pointer" onClick={() => openQuotaModal(mb)} title="Click to edit storage quota">
+                        <div className="space-y-1 max-w-36 mx-auto font-mono text-[11px] group">
+                          <div className="flex justify-between text-zinc-600 text-[10px] group-hover:text-zinc-950 transition-colors">
                             <span>{formatBytes(mb.used_bytes || 0)}</span>
                             <span className="text-zinc-400">/ {formatBytes(mb.quota_bytes)}</span>
                           </div>
@@ -378,6 +420,12 @@ export function MailboxesView() {
                       <td className="py-3 px-6 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-xs font-sans">
                           <button
+                            onClick={() => openQuotaModal(mb)}
+                            className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"
+                          >
+                            Quota
+                          </button>
+                          <button
                             onClick={() => openAliasDrawer(mb.email)}
                             className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"
                           >
@@ -397,7 +445,7 @@ export function MailboxesView() {
                           </button>
                           <button
                             onClick={() => setMailboxToDelete(mb.email)}
-                            className="px-2.5 py-1 text-[11px] font-medium bg-red-50 hover:bg-red-100 border border-red-200/80 rounded-md text-red-700 shadow-2xs hover:border-red-300 transition-all cursor-pointer"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-red-50 hover:text-red-700 hover:border-red-200 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs transition-all cursor-pointer"
                           >
                             Delete
                           </button>
@@ -636,6 +684,73 @@ export function MailboxesView() {
                 })
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Quota & Reconcile Modal */}
+      {quotaEditMailbox && (
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
+          <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
+              <div>
+                <h3 className="font-semibold text-zinc-950 text-sm">Edit Storage Quota</h3>
+                <p className="text-xs text-zinc-500 font-mono">{quotaEditMailbox.email}</p>
+              </div>
+              <button onClick={() => setQuotaEditMailbox(null)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveQuota} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">New Quota Limit (MB)</label>
+                <input
+                  type="number"
+                  min={50}
+                  max={1000000}
+                  value={editQuotaMB}
+                  onChange={(e) => setEditQuotaMB(Number(e.target.value))}
+                  disabled={updatingQuota || reconcilingQuota}
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
+                  autoFocus
+                />
+                <p className="text-[11px] text-zinc-500 mt-1">
+                  Current usage: <strong className="text-zinc-900 font-mono">{formatBytes(quotaEditMailbox.used_bytes || 0)}</strong>
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={handleReconcileQuota}
+                  disabled={updatingQuota || reconcilingQuota}
+                  className="px-3 py-1.5 text-xs text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg cursor-pointer flex items-center gap-1 font-medium transition-all"
+                  title="Rescan Maildir disk usage"
+                >
+                  <RefreshCw className={`w-3 h-3 ${reconcilingQuota ? "animate-spin" : ""}`} />
+                  <span>Rescan Disk</span>
+                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setQuotaEditMailbox(null)}
+                    disabled={updatingQuota || reconcilingQuota}
+                    className="px-3 py-1.5 text-xs text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updatingQuota || reconcilingQuota}
+                    className="px-3.5 py-1.5 text-xs bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg cursor-pointer shadow-xs font-medium transition-all"
+                  >
+                    {updatingQuota ? "Saving..." : "Save Quota"}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
