@@ -4,7 +4,17 @@ import React, { useEffect, useState } from "react";
 import { api, MailboxItem, AliasItem, DomainItem } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { RefreshCw, Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  RefreshCw,
+  Plus,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Mail,
+  HardDrive,
+  UserCheck,
+} from "lucide-react";
 
 export function MailboxesView() {
   const toast = useToast();
@@ -12,6 +22,11 @@ export function MailboxesView() {
   const [domains, setDomains] = useState<DomainItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Search & Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [domainFilter, setDomainFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "suspended">("all");
 
   // Pagination State
   const [page, setPage] = useState(1);
@@ -39,7 +54,7 @@ export function MailboxesView() {
   const [newAlias, setNewAlias] = useState("");
   const [addingAlias, setAddingAlias] = useState(false);
 
-  const loadData = async () => {
+  const loadData = async (notify = false) => {
     try {
       setLoading(true);
       setError(null);
@@ -49,6 +64,9 @@ export function MailboxesView() {
       ]);
       setMailboxes(mbs);
       setDomains(doms);
+      if (notify) {
+        toast.info("Mailboxes Refreshed", `Loaded ${mbs.length} accounts across ${doms.length} domains.`);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load mailboxes";
       setError(msg);
@@ -59,7 +77,7 @@ export function MailboxesView() {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -157,11 +175,11 @@ export function MailboxesView() {
     }
   };
 
-  const handleDeleteAlias = async (sourceAlias: string) => {
+  const handleDeleteAlias = async (aliasEmail: string) => {
     if (!aliasMailbox) return;
     try {
-      await api.deleteAlias(aliasMailbox, sourceAlias);
-      toast.info("Alias Removed", `Forwarding alias ${sourceAlias} removed.`);
+      await api.deleteAlias(aliasMailbox, aliasEmail);
+      toast.success("Alias Deleted", `Forwarding for ${aliasEmail} removed.`);
       const list = await api.getAliases(aliasMailbox);
       setAliases(list);
     } catch (err: unknown) {
@@ -178,25 +196,40 @@ export function MailboxesView() {
     return mb.toFixed(1) + " MB";
   };
 
+  // Filtered Mailboxes
+  const filteredMailboxes = mailboxes.filter((mb) => {
+    const matchesSearch = mb.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDomain = domainFilter === "all" ? true : mb.email.endsWith(`@${domainFilter}`);
+    const matchesStatus =
+      statusFilter === "all" ? true : statusFilter === "active" ? mb.status === "active" : mb.status !== "active";
+    return matchesSearch && matchesDomain && matchesStatus;
+  });
+
   // Pagination Calculations
-  const totalPages = Math.ceil(mailboxes.length / pageSize) || 1;
-  const paginatedMailboxes = mailboxes.slice((page - 1) * pageSize, page * pageSize);
-  const startIdx = mailboxes.length > 0 ? (page - 1) * pageSize + 1 : 0;
-  const endIdx = Math.min(page * pageSize, mailboxes.length);
+  const totalPages = Math.ceil(filteredMailboxes.length / pageSize) || 1;
+  const paginatedMailboxes = filteredMailboxes.slice((page - 1) * pageSize, page * pageSize);
+  const startIdx = filteredMailboxes.length > 0 ? (page - 1) * pageSize + 1 : 0;
+  const endIdx = Math.min(page * pageSize, filteredMailboxes.length);
+
+  const activeCount = mailboxes.filter((m) => m.status === "active").length;
+  const totalUsed = mailboxes.reduce((acc, m) => acc + (m.used_bytes || 0), 0);
+  const totalQuota = mailboxes.reduce((acc, m) => acc + (m.quota_bytes || 0), 0);
 
   return (
-    <div className="h-full flex flex-col space-y-4 max-w-6xl mx-auto">
-      {/* Header - Fixed top */}
+    <div className="h-full flex flex-col space-y-4 max-w-6xl mx-auto min-h-0">
+      {/* Header Bar */}
       <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-3">
         <div>
           <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">Mailbox Accounts</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Provisioning, quotas, credentials, and forwarding aliases</p>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Dovecot Maildir storage accounts, quotas, authentication, and virtual alias routing
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={loadData}
+            onClick={() => loadData(true)}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-700 shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-zinc-400" : "text-zinc-500"}`} />
             <span>Refresh</span>
@@ -212,14 +245,105 @@ export function MailboxesView() {
       </div>
 
       {error && (
-        <div className="shrink-0 p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-mono rounded-lg">
+        <div className="shrink-0 p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-mono rounded-xl">
           {error}
         </div>
       )}
 
-      {/* Table Container - Fills available height */}
-      <div className="flex-1 min-h-0 rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between">
-        <div className="flex-1 overflow-y-auto">
+      {/* Top 3 KPI Summary Cards */}
+      <div className="shrink-0 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Mailbox Accounts</span>
+            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] font-mono font-semibold">
+              {activeCount} ACTIVE
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-zinc-950 font-mono">{mailboxes.length}</div>
+          <div className="text-[11px] text-zinc-500 font-sans">Active Dovecot Maildir virtual accounts</div>
+        </div>
+
+        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Storage Pool</span>
+            <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 text-[10px] font-mono font-semibold">
+              {formatBytes(totalQuota)} POOL
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-zinc-950 font-mono">{formatBytes(totalUsed)}</div>
+          <div className="text-[11px] text-zinc-500 font-sans">Total storage used across all mailboxes</div>
+        </div>
+
+        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Protocols & Auth</span>
+            <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 text-[10px] font-mono font-semibold">
+              SASL / TLS
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-zinc-950 font-mono">IMAP / IMAPS</div>
+          <div className="text-[11px] text-zinc-500 font-sans">Ports 143 & 993 with StartTLS encryption</div>
+        </div>
+      </div>
+
+      {/* Table Container with Integrated Search & Filters */}
+      <div className="flex-1 min-h-0 rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between">
+        {/* Search & Filter Bar */}
+        <div className="shrink-0 px-4 py-3 bg-zinc-50/80 border-b border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by email address..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              className="w-full pl-8.5 pr-3 py-1.5 text-xs bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 font-mono"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 text-xs font-mono text-zinc-500">
+            <div className="flex items-center gap-1.5">
+              <span>Domain:</span>
+              <select
+                value={domainFilter}
+                onChange={(e) => {
+                  setDomainFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="px-2 py-1 bg-white border border-zinc-200 rounded-lg text-zinc-800 text-xs font-mono cursor-pointer"
+              >
+                <option value="all">All Domains ({domains.length})</option>
+                {domains.map((d) => (
+                  <option key={d.id} value={d.name}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span>Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value as "all" | "active" | "suspended");
+                  setPage(1);
+                }}
+                className="px-2 py-1 bg-white border border-zinc-200 rounded-lg text-zinc-800 text-xs font-mono cursor-pointer"
+              >
+                <option value="all">All ({mailboxes.length})</option>
+                <option value="active">Active ({activeCount})</option>
+                <option value="suspended">Suspended ({mailboxes.length - activeCount})</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Mailboxes Table */}
+        <div className="flex-1 overflow-y-auto min-h-0">
           <table className="w-full text-left text-xs">
             <thead className="bg-zinc-50/80 border-b border-zinc-200 font-mono text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
@@ -231,10 +355,12 @@ export function MailboxesView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
-              {mailboxes.length === 0 ? (
+              {paginatedMailboxes.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-zinc-400 text-xs font-sans">
-                    No mailboxes created yet. Click &quot;New Mailbox&quot; to provision an account.
+                    {searchQuery || domainFilter !== "all"
+                      ? "No mailboxes match the current search filters."
+                      : "No mailboxes created yet. Click 'New Mailbox' to provision an account."}
                   </td>
                 </tr>
               ) : (
@@ -315,13 +441,13 @@ export function MailboxesView() {
         </div>
 
         {/* Pagination Footer */}
-        {mailboxes.length > 0 && (
+        {filteredMailboxes.length > 0 && (
           <div className="shrink-0 px-4 py-2.5 bg-zinc-50/80 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500 font-mono">
             <div className="flex items-center gap-3">
               <span>
                 Showing <span className="font-semibold text-zinc-900">{startIdx}</span> to{" "}
                 <span className="font-semibold text-zinc-900">{endIdx}</span> of{" "}
-                <span className="font-semibold text-zinc-900">{mailboxes.length}</span> mailboxes
+                <span className="font-semibold text-zinc-900">{filteredMailboxes.length}</span> mailboxes
               </span>
               <div className="hidden sm:flex items-center gap-1 text-[11px] text-zinc-400">
                 <span>Per page:</span>
@@ -369,60 +495,63 @@ export function MailboxesView() {
         <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
-              <h3 className="font-semibold text-zinc-950 text-sm">Create Mailbox</h3>
+              <h3 className="font-semibold text-zinc-950 text-sm">Create New Mailbox</h3>
               <button onClick={() => setShowAddModal(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
-                  Email Address
-                </label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Email Address</label>
                 <input
                   type="email"
                   placeholder="user@example.com"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
+                  disabled={creating}
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
                   autoFocus
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
-                  Password
-                </label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Initial Password</label>
                 <input
                   type="password"
-                  placeholder="Min 8 characters"
+                  placeholder="••••••••••••"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
+                  disabled={creating}
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
-                  Quota Allocation (MB)
-                </label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">Storage Quota (MB)</label>
                 <input
                   type="number"
+                  min={50}
+                  max={50000}
                   value={newQuotaMB}
                   onChange={(e) => setNewQuotaMB(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
+                  disabled={creating}
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
                 />
               </div>
+
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3.5 py-1.5 text-xs border border-zinc-200 rounded-lg text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  disabled={creating}
+                  className="px-3 py-1.5 text-xs text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating || !newEmail || !newPassword}
-                  className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {creating ? "Provisioning..." : "Create Account"}
                 </button>
@@ -437,23 +566,24 @@ export function MailboxesView() {
         <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
-              <h3 className="font-semibold text-zinc-950 text-sm">Reset Password</h3>
+              <div>
+                <h3 className="font-semibold text-zinc-950 text-sm">Reset Password</h3>
+                <p className="text-xs text-zinc-500 font-mono">{pwResetMailbox}</p>
+              </div>
               <button onClick={() => setPwResetMailbox(null)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-zinc-500 font-mono truncate">{pwResetMailbox}</p>
             <form onSubmit={handleResetPassword} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
-                  New Password
-                </label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">New Secure Password</label>
                 <input
                   type="password"
-                  placeholder="Enter new password"
+                  placeholder="••••••••••••"
                   value={resetPasswordVal}
                   onChange={(e) => setResetPasswordVal(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
+                  disabled={resettingPw}
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
                   autoFocus
                 />
               </div>
@@ -461,14 +591,15 @@ export function MailboxesView() {
                 <button
                   type="button"
                   onClick={() => setPwResetMailbox(null)}
-                  className="px-3.5 py-1.5 text-xs border border-zinc-200 rounded-lg text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  disabled={resettingPw}
+                  className="px-3 py-1.5 text-xs text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resettingPw || !resetPasswordVal}
-                  className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {resettingPw ? "Updating..." : "Update Password"}
                 </button>
@@ -478,73 +609,72 @@ export function MailboxesView() {
         </div>
       )}
 
-      {/* Aliases Drawer */}
+      {/* Alias Drawer */}
       {aliasMailbox && (
         <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
-          <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-xl space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
+          <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-xl space-y-4 max-h-[85vh] flex flex-col">
+            <div className="flex justify-between items-center pb-2 border-b border-zinc-100 shrink-0">
               <div>
-                <h3 className="font-semibold text-zinc-950 text-sm">Forwarding Aliases</h3>
-                <p className="text-xs text-zinc-500 font-mono truncate max-w-72">{aliasMailbox}</p>
+                <h3 className="font-semibold text-zinc-950 text-sm">Virtual Email Aliases</h3>
+                <p className="text-xs text-zinc-500 font-mono">Recipient: {aliasMailbox}</p>
               </div>
               <button onClick={() => setAliasMailbox(null)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddAlias} className="flex gap-2">
+            {/* Add Alias Form */}
+            <form onSubmit={handleAddAlias} className="flex gap-2 shrink-0">
               <input
                 type="email"
                 placeholder="alias@example.com"
                 value={newAlias}
                 onChange={(e) => setNewAlias(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white font-mono text-zinc-950"
+                disabled={addingAlias}
+                className="flex-1 px-3 py-1.5 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
               />
               <button
                 type="submit"
                 disabled={addingAlias || !newAlias}
-                className="px-3.5 py-1.5 text-xs bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg font-medium disabled:opacity-50 cursor-pointer shadow-xs"
+                className="px-3 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg disabled:opacity-50 cursor-pointer shadow-xs"
               >
-                Add
+                {addingAlias ? "Adding..." : "Add Alias"}
               </button>
             </form>
 
-            <div className="space-y-1.5 max-h-48 overflow-y-auto font-mono text-xs divide-y divide-zinc-100">
+            {/* Alias List */}
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-2 text-xs font-mono">
               {aliases.length === 0 ? (
-                <div className="py-6 text-center text-zinc-400 font-sans text-xs">No aliases configured.</div>
+                <div className="py-8 text-center text-zinc-400 font-sans">
+                  No alias forwarders mapped to this mailbox yet.
+                </div>
               ) : (
-                aliases.map((al) => (
-                  <div key={al.id} className="py-2 flex justify-between items-center">
-                    <span>{al.source || al.alias}</span>
-                    <button
-                      onClick={() => handleDeleteAlias(al.source || al.alias || "")}
-                      className="text-red-600 hover:underline text-[11px] cursor-pointer"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))
+                aliases.map((al) => {
+                  const aliasAddr = al.source || al.alias || "";
+                  return (
+                    <div key={al.id} className="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200 flex items-center justify-between">
+                      <span className="font-medium text-zinc-900">{aliasAddr}</span>
+                      <button
+                        onClick={() => handleDeleteAlias(aliasAddr)}
+                        className="text-red-600 hover:text-red-800 text-[11px] font-sans font-medium cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  );
+                })
               )}
-            </div>
-
-            <div className="pt-3 border-t border-zinc-100 flex justify-end">
-              <button
-                onClick={() => setAliasMailbox(null)}
-                className="px-3.5 py-1.5 text-xs border border-zinc-200 rounded-lg hover:bg-zinc-50 cursor-pointer text-zinc-700"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Confirm Delete Mailbox Modal */}
+      {/* Confirmation Modal for Delete Mailbox */}
       <ConfirmModal
         isOpen={Boolean(mailboxToDelete)}
         title="Delete Mailbox Account"
-        message={`Are you sure you want to permanently delete mailbox "${mailboxToDelete}"? All messages, folders, and IMAP data stored in Dovecot Maildir will be purged.`}
-        confirmLabel="Delete Mailbox"
+        message={`Are you sure you want to permanently delete account "${mailboxToDelete}"? All Maildir messages, quota records, and aliases will be purged.`}
+        confirmLabel="Delete Account"
         variant="danger"
         loading={deleting}
         onConfirm={confirmDeleteMailbox}
