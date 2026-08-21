@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { api, QueueSummary, QueueMessage } from "@/lib/api";
-import { RefreshCw, Send, X } from "lucide-react";
+import { RefreshCw, Send, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function QueueView() {
   const [summary, setSummary] = useState<QueueSummary | null>(null);
@@ -10,6 +10,10 @@ export function QueueView() {
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   // Inspector Modal
   const [inspectingId, setInspectingId] = useState<string | null>(null);
@@ -34,6 +38,7 @@ export function QueueView() {
   };
 
   useEffect(() => {
+    setPage(1);
     loadData();
   }, [activeFilter]);
 
@@ -98,6 +103,12 @@ export function QueueView() {
       setLoadingInspect(false);
     }
   };
+
+  // Pagination Calculations
+  const totalPages = Math.ceil(messages.length / pageSize) || 1;
+  const paginatedMessages = messages.slice((page - 1) * pageSize, page * pageSize);
+  const startIdx = messages.length > 0 ? (page - 1) * pageSize + 1 : 0;
+  const endIdx = Math.min(page * pageSize, messages.length);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -194,7 +205,7 @@ export function QueueView() {
                 </td>
               </tr>
             ) : (
-              messages.map((msg) => (
+              paginatedMessages.map((msg) => (
                 <tr key={msg.id} className="hover:bg-zinc-50/50 transition-colors">
                   <td className="py-2.5 px-4 font-bold text-zinc-950">{msg.id}</td>
                   <td className="py-2.5 px-4 text-zinc-700 truncate max-w-40">{msg.sender || "<empty>"}</td>
@@ -238,6 +249,38 @@ export function QueueView() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination Footer */}
+        {messages.length > 0 && (
+          <div className="px-4 py-2.5 bg-zinc-50/60 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500 font-mono">
+            <div>
+              Showing <span className="font-semibold text-zinc-900">{startIdx}</span> to{" "}
+              <span className="font-semibold text-zinc-900">{endIdx}</span> of{" "}
+              <span className="font-semibold text-zinc-900">{messages.length}</span> messages
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px]">
+                Page {page} of {totalPages}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="p-1 rounded bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="p-1 rounded bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Inspect Modal */}

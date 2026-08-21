@@ -33,7 +33,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
       setDomains(doms);
       setMailboxes(mbs);
       setQueueSummary(qs);
-      setAuditLogs(logs.slice(0, 8));
+      setAuditLogs(logs);
       setHealth(hl);
     } finally {
       setLoading(false);
@@ -56,9 +56,9 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
+    <div className="h-full flex flex-col space-y-4 max-w-6xl mx-auto">
+      {/* Header - Fixed top */}
+      <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-3">
         <div>
           <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">System Overview</h1>
           <p className="text-xs text-zinc-500 mt-0.5">Real-time status of MailOpen core services & cluster</p>
@@ -82,11 +82,11 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      {/* Metrics Row - Fixed */}
+      <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div
           onClick={() => onNavigate("domains")}
-          className="p-4 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+          className="p-3.5 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-baseline">
             <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Domains</span>
@@ -100,7 +100,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
 
         <div
           onClick={() => onNavigate("mailboxes")}
-          className="p-4 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+          className="p-3.5 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-baseline">
             <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Mailboxes</span>
@@ -114,7 +114,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
 
         <div
           onClick={() => onNavigate("queue")}
-          className="p-4 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+          className="p-3.5 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-baseline">
             <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Queue Depth</span>
@@ -127,7 +127,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
 
         <div
           onClick={() => onNavigate("mailboxes")}
-          className="p-4 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+          className="p-3.5 rounded-xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-baseline">
             <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Storage Usage</span>
@@ -137,83 +137,87 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
         </div>
       </div>
 
-      {/* Grid: Services & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Lower Section: Services & Activity (fits viewport height) */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Services Status Table */}
-        <div className="lg:col-span-2 rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs">
-          <div className="px-4 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-            <h2 className="text-xs font-semibold text-zinc-800 uppercase tracking-wider font-mono">
-              Engine Services Status
-            </h2>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              All Services Nominal
-            </span>
+        <div className="lg:col-span-2 rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="px-4 py-2.5 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+              <h2 className="text-xs font-semibold text-zinc-800 uppercase tracking-wider font-mono">
+                Engine Services Status
+              </h2>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                All Services Nominal
+              </span>
+            </div>
+            <table className="w-full text-left text-xs font-mono">
+              <tbody className="divide-y divide-zinc-100">
+                <tr className="hover:bg-zinc-50/50 transition-colors">
+                  <td className="py-2.5 px-4 font-medium text-zinc-900">Postfix (MTA)</td>
+                  <td className="py-2.5 px-4 text-zinc-500">Port 25 (Inbound) / 587 (Submission)</td>
+                  <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">LISTENING</td>
+                </tr>
+                <tr className="hover:bg-zinc-50/50 transition-colors">
+                  <td className="py-2.5 px-4 font-medium text-zinc-900">Dovecot (IMAP)</td>
+                  <td className="py-2.5 px-4 text-zinc-500">Port 143 (IMAP) / 993 (IMAPS)</td>
+                  <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">LISTENING</td>
+                </tr>
+                <tr className="hover:bg-zinc-50/50 transition-colors">
+                  <td className="py-2.5 px-4 font-medium text-zinc-900">OpenLDAP / AD</td>
+                  <td className="py-2.5 px-4 text-zinc-500">Port 389 (StartTLS) / Directory Sync</td>
+                  <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">CONNECTED</td>
+                </tr>
+                <tr className="hover:bg-zinc-50/50 transition-colors">
+                  <td className="py-2.5 px-4 font-medium text-zinc-900">OpenDKIM Milter</td>
+                  <td className="py-2.5 px-4 text-zinc-500">UNIX Socket / Outbound Signing</td>
+                  <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">ACTIVE</td>
+                </tr>
+                <tr className="hover:bg-zinc-50/50 transition-colors">
+                  <td className="py-2.5 px-4 font-medium text-zinc-900">PostgreSQL DB</td>
+                  <td className="py-2.5 px-4 text-zinc-500">Schema v003 / Virtual Proxymap</td>
+                  <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">READY</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <table className="w-full text-left text-xs font-mono">
-            <tbody className="divide-y divide-zinc-100">
-              <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="py-2.5 px-4 font-medium text-zinc-900">Postfix (MTA)</td>
-                <td className="py-2.5 px-4 text-zinc-500">Port 25 (Inbound) / 587 (Submission)</td>
-                <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">LISTENING</td>
-              </tr>
-              <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="py-2.5 px-4 font-medium text-zinc-900">Dovecot (IMAP)</td>
-                <td className="py-2.5 px-4 text-zinc-500">Port 143 (IMAP) / 993 (IMAPS)</td>
-                <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">LISTENING</td>
-              </tr>
-              <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="py-2.5 px-4 font-medium text-zinc-900">OpenLDAP / AD</td>
-                <td className="py-2.5 px-4 text-zinc-500">Port 389 (StartTLS) / Directory Sync</td>
-                <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">CONNECTED</td>
-              </tr>
-              <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="py-2.5 px-4 font-medium text-zinc-900">OpenDKIM Milter</td>
-                <td className="py-2.5 px-4 text-zinc-500">UNIX Socket / Outbound Signing</td>
-                <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">ACTIVE</td>
-              </tr>
-              <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="py-2.5 px-4 font-medium text-zinc-900">PostgreSQL DB</td>
-                <td className="py-2.5 px-4 text-zinc-500">Schema v003 / Virtual Proxymap</td>
-                <td className="py-2.5 px-4 text-right text-emerald-700 font-semibold text-[11px]">READY</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="p-3 bg-zinc-50/50 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+            <span>Cluster Architecture: amd64/arm64</span>
+            <span>Zero-trust TLS 1.2+ Enforced</span>
+          </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="px-4 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-              <h2 className="text-xs font-semibold text-zinc-800 uppercase tracking-wider font-mono">
-                Recent Activity
-              </h2>
-              <button
-                onClick={() => onNavigate("security")}
-                className="text-[11px] text-zinc-500 hover:text-zinc-900 font-medium cursor-pointer"
-              >
-                View all
-              </button>
-            </div>
-            <div className="divide-y divide-zinc-100 text-xs">
-              {auditLogs.length === 0 ? (
-                <div className="py-8 text-center text-zinc-400 font-mono text-xs">No recent activity</div>
-              ) : (
-                auditLogs.map((log) => (
-                  <div key={log.id} className="p-3 font-mono hover:bg-zinc-50/50 transition-colors">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <span className="font-semibold text-zinc-900 text-[11px]">{log.action}</span>
-                      <span className="text-[10px] text-zinc-400">
-                        {new Date(log.created_at).toLocaleTimeString()}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-zinc-500 truncate">
-                      {log.actor} $\rightarrow$ {log.resource}
-                    </div>
+        {/* Recent Activity - SCROLLABLE CONTAINER */}
+        <div className="lg:col-span-1 rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col h-full min-h-0">
+          <div className="shrink-0 px-4 py-2.5 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+            <h2 className="text-xs font-semibold text-zinc-800 uppercase tracking-wider font-mono">
+              Recent Activity
+            </h2>
+            <button
+              onClick={() => onNavigate("security")}
+              className="text-[11px] text-zinc-500 hover:text-zinc-900 font-medium cursor-pointer"
+            >
+              View all
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-zinc-100 text-xs">
+            {auditLogs.length === 0 ? (
+              <div className="py-8 text-center text-zinc-400 font-mono text-xs">No recent activity</div>
+            ) : (
+              auditLogs.map((log) => (
+                <div key={log.id} className="p-3 font-mono hover:bg-zinc-50/50 transition-colors">
+                  <div className="flex justify-between items-baseline mb-0.5">
+                    <span className="font-semibold text-zinc-900 text-[11px]">{log.action}</span>
+                    <span className="text-[10px] text-zinc-400">
+                      {new Date(log.created_at).toLocaleTimeString()}
+                    </span>
                   </div>
-                ))
-              )}
-            </div>
+                  <div className="text-[11px] text-zinc-500 truncate">
+                    {log.actor} $\rightarrow$ {log.resource}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

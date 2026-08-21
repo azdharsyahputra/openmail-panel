@@ -2,12 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { api, DomainItem, DomainDNSResponse, DKIMKeyItem } from "@/lib/api";
-import { RefreshCw, Plus, Copy, Check, X } from "lucide-react";
+import { RefreshCw, Plus, Copy, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function DomainsView() {
   const [domains, setDomains] = useState<DomainItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
   // Modals & Drawers
   const [showAddModal, setShowAddModal] = useState(false);
@@ -124,6 +128,12 @@ export function DomainsView() {
     setTimeout(() => setCopiedKey(null), 1500);
   };
 
+  // Pagination Calculations
+  const totalPages = Math.ceil(domains.length / pageSize) || 1;
+  const paginatedDomains = domains.slice((page - 1) * pageSize, page * pageSize);
+  const startIdx = domains.length > 0 ? (page - 1) * pageSize + 1 : 0;
+  const endIdx = Math.min(page * pageSize, domains.length);
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -176,7 +186,7 @@ export function DomainsView() {
                 </td>
               </tr>
             ) : (
-              domains.map((dom) => (
+              paginatedDomains.map((dom) => (
                 <tr key={dom.id} className="hover:bg-zinc-50/50 transition-colors">
                   <td className="py-2.5 px-4 font-medium text-zinc-950 font-mono text-xs">{dom.name}</td>
                   <td className="py-2.5 px-4">
@@ -220,6 +230,38 @@ export function DomainsView() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination Footer */}
+        {domains.length > 0 && (
+          <div className="px-4 py-2.5 bg-zinc-50/60 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500 font-mono">
+            <div>
+              Showing <span className="font-semibold text-zinc-900">{startIdx}</span> to{" "}
+              <span className="font-semibold text-zinc-900">{endIdx}</span> of{" "}
+              <span className="font-semibold text-zinc-900">{domains.length}</span> domains
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px]">
+                Page {page} of {totalPages}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="p-1 rounded bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="p-1 rounded bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add Domain Modal */}

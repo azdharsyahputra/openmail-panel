@@ -2,13 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import { api, MailboxItem, AliasItem, DomainItem } from "@/lib/api";
-import { RefreshCw, Plus, X } from "lucide-react";
+import { RefreshCw, Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function MailboxesView() {
   const [mailboxes, setMailboxes] = useState<MailboxItem[]>([]);
   const [domains, setDomains] = useState<DomainItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -99,9 +103,9 @@ export function MailboxesView() {
     try {
       setResettingPw(true);
       await api.setMailboxPassword(pwResetMailbox, resetPasswordVal);
+      alert("Password updated successfully.");
       setPwResetMailbox(null);
       setResetPasswordVal("");
-      alert("Password updated successfully.");
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Failed to reset password");
     } finally {
@@ -112,6 +116,7 @@ export function MailboxesView() {
   const openAliasDrawer = async (email: string) => {
     setAliasMailbox(email);
     setAliases([]);
+    setNewAlias("");
     try {
       const list = await api.getAliases(email);
       setAliases(list);
@@ -136,10 +141,10 @@ export function MailboxesView() {
     }
   };
 
-  const handleDeleteAlias = async (alias: string) => {
+  const handleDeleteAlias = async (sourceAlias: string) => {
     if (!aliasMailbox) return;
     try {
-      await api.deleteAlias(aliasMailbox, alias);
+      await api.deleteAlias(aliasMailbox, sourceAlias);
       const list = await api.getAliases(aliasMailbox);
       setAliases(list);
     } catch (err: unknown) {
@@ -147,12 +152,20 @@ export function MailboxesView() {
     }
   };
 
-  const formatStorage = (used: number, quota: number) => {
-    const usedMB = (used / (1024 * 1024)).toFixed(1);
-    const quotaMB = (quota / (1024 * 1024)).toFixed(0);
-    const percent = quota > 0 ? Math.min(100, Math.round((used / quota) * 100)) : 0;
-    return { usedMB, quotaMB, percent };
+  const formatBytes = (bytes: number) => {
+    if (!bytes || bytes === 0) return "0 MB";
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1024) {
+      return (mb / 1024).toFixed(1) + " GB";
+    }
+    return mb.toFixed(1) + " MB";
   };
+
+  // Pagination Calculations
+  const totalPages = Math.ceil(mailboxes.length / pageSize) || 1;
+  const paginatedMailboxes = mailboxes.slice((page - 1) * pageSize, page * pageSize);
+  const startIdx = mailboxes.length > 0 ? (page - 1) * pageSize + 1 : 0;
+  const endIdx = Math.min(page * pageSize, mailboxes.length);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -160,7 +173,7 @@ export function MailboxesView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
         <div>
           <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">Mailbox Accounts</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">User mailboxes, storage quotas, and forwarding aliases</p>
+          <p className="text-xs text-zinc-500 mt-0.5">Provisioning, quotas, credentials, and forwarding aliases</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -192,9 +205,9 @@ export function MailboxesView() {
         <table className="w-full text-left text-xs">
           <thead className="bg-zinc-50/70 border-b border-zinc-200 font-mono text-zinc-500 uppercase text-[10px]">
             <tr>
-              <th className="py-3 px-4">Account Email</th>
-              <th className="py-3 px-4">Storage Usage</th>
+              <th className="py-3 px-4">Mailbox Account</th>
               <th className="py-3 px-4">Provider</th>
+              <th className="py-3 px-4">Storage Quota</th>
               <th className="py-3 px-4">Status</th>
               <th className="py-3 px-4 text-right font-sans">Actions</th>
             </tr>
@@ -203,50 +216,52 @@ export function MailboxesView() {
             {mailboxes.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-10 text-center text-zinc-400 text-xs font-sans">
-                  No mailboxes found. Click &quot;New Mailbox&quot; to provision an account.
+                  No mailboxes created yet. Click &quot;New Mailbox&quot; to provision an account.
                 </td>
               </tr>
             ) : (
-              mailboxes.map((mb) => {
-                const storage = formatStorage(mb.used_bytes || 0, mb.quota_bytes || 0);
-                const isSuspended = mb.status === "suspended";
+              paginatedMailboxes.map((mb) => {
+                const percent = mb.quota_bytes > 0 ? Math.round(((mb.used_bytes || 0) / mb.quota_bytes) * 100) : 0;
                 return (
                   <tr key={mb.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-2.5 px-4 font-medium text-zinc-950 font-mono text-xs">
-                      {mb.email}
-                    </td>
-                    <td className="py-2.5 px-4 min-w-44 font-mono text-[11px]">
-                      <div className="flex justify-between text-zinc-500 mb-1">
-                        <span>{storage.usedMB} MB</span>
-                        <span>{storage.quotaMB} MB ({storage.percent}%)</span>
-                      </div>
-                      <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            storage.percent > 90 ? "bg-red-500" : storage.percent > 75 ? "bg-amber-500" : "bg-zinc-900"
-                          }`}
-                          style={{ width: `${storage.percent}%` }}
-                        />
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-4 font-mono text-[11px]">
-                      <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200">
-                        {mb.identity_provider === "ldap" ? "LDAP" : "LOCAL"}
+                    <td className="py-3 px-4">
+                      <span className="font-semibold text-zinc-950 font-mono text-xs block">{mb.email}</span>
+                      <span className="text-[10px] text-zinc-400 font-mono">
+                        Provision: {mb.provisioning_status || "ready"}
                       </span>
                     </td>
-                    <td className="py-2.5 px-4">
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-zinc-100 text-zinc-700 border border-zinc-200 uppercase">
+                        {mb.identity_provider || "local"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="space-y-1 max-w-36 font-mono text-[11px]">
+                        <div className="flex justify-between text-zinc-600">
+                          <span>{formatBytes(mb.used_bytes || 0)}</span>
+                          <span className="text-zinc-400">/ {formatBytes(mb.quota_bytes)}</span>
+                        </div>
+                        <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${percent > 85 ? "bg-red-500" : percent > 60 ? "bg-amber-500" : "bg-zinc-950"}`}
+                            style={{ width: `${Math.min(100, Math.max(percent, 2))}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
                       <span
                         className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-medium ${
-                          isSuspended
-                            ? "bg-amber-500/10 text-amber-700 border border-amber-500/20"
-                            : "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
+                          mb.status === "active"
+                            ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
+                            : "bg-red-500/10 text-red-700 border border-red-500/20"
                         }`}
                       >
                         {mb.status}
                       </span>
                     </td>
-                    <td className="py-2.5 px-4 text-right font-sans">
-                      <div className="flex items-center justify-end gap-1 text-xs">
+                    <td className="py-3 px-4 text-right font-sans">
+                      <div className="flex items-center justify-end gap-1.5 text-xs">
                         <button
                           onClick={() => openAliasDrawer(mb.email)}
                           className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
@@ -263,7 +278,7 @@ export function MailboxesView() {
                           onClick={() => handleToggleStatus(mb)}
                           className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
                         >
-                          {isSuspended ? "Resume" : "Suspend"}
+                          {mb.status === "active" ? "Suspend" : "Resume"}
                         </button>
                         <button
                           onClick={() => handleDelete(mb.email)}
@@ -279,14 +294,46 @@ export function MailboxesView() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination Footer */}
+        {mailboxes.length > 0 && (
+          <div className="px-4 py-2.5 bg-zinc-50/60 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500 font-mono">
+            <div>
+              Showing <span className="font-semibold text-zinc-900">{startIdx}</span> to{" "}
+              <span className="font-semibold text-zinc-900">{endIdx}</span> of{" "}
+              <span className="font-semibold text-zinc-900">{mailboxes.length}</span> mailboxes
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px]">
+                Page {page} of {totalPages}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="p-1 rounded bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="p-1 rounded bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Add Mailbox Modal */}
+      {/* New Mailbox Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
-              <h3 className="font-semibold text-zinc-950 text-sm">Create Virtual Mailbox</h3>
+              <h3 className="font-semibold text-zinc-950 text-sm">Create Mailbox</h3>
               <button onClick={() => setShowAddModal(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -305,34 +352,29 @@ export function MailboxesView() {
                   autoFocus
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-medium text-zinc-700 mb-1">
                   Password
                 </label>
                 <input
                   type="password"
-                  placeholder="••••••••••••"
+                  placeholder="Min 8 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-medium text-zinc-700 mb-1">
-                  Storage Quota (MB)
+                  Quota Allocation (MB)
                 </label>
                 <input
                   type="number"
-                  min={100}
-                  step={100}
                   value={newQuotaMB}
                   onChange={(e) => setNewQuotaMB(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none font-mono text-zinc-950"
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
                 />
               </div>
-
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
@@ -346,7 +388,7 @@ export function MailboxesView() {
                   disabled={creating || !newEmail || !newPassword}
                   className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  {creating ? "Creating..." : "Create Mailbox"}
+                  {creating ? "Provisioning..." : "Create Account"}
                 </button>
               </div>
             </form>
@@ -354,19 +396,17 @@ export function MailboxesView() {
         </div>
       )}
 
-      {/* Reset Password Modal */}
+      {/* Password Reset Modal */}
       {pwResetMailbox && (
         <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
-              <div>
-                <h3 className="font-semibold text-zinc-950 text-sm">Reset Password</h3>
-                <p className="text-xs text-zinc-500 font-mono mt-0.5">{pwResetMailbox}</p>
-              </div>
+              <h3 className="font-semibold text-zinc-950 text-sm">Reset Password</h3>
               <button onClick={() => setPwResetMailbox(null)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
+            <p className="text-xs text-zinc-500 font-mono truncate">{pwResetMailbox}</p>
             <form onSubmit={handleResetPassword} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-medium text-zinc-700 mb-1">
@@ -374,7 +414,7 @@ export function MailboxesView() {
                 </label>
                 <input
                   type="password"
-                  placeholder="••••••••••••"
+                  placeholder="Enter new password"
                   value={resetPasswordVal}
                   onChange={(e) => setResetPasswordVal(e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
@@ -394,7 +434,7 @@ export function MailboxesView() {
                   disabled={resettingPw || !resetPasswordVal}
                   className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  {resettingPw ? "Saving..." : "Save Password"}
+                  {resettingPw ? "Updating..." : "Update Password"}
                 </button>
               </div>
             </form>
@@ -405,11 +445,11 @@ export function MailboxesView() {
       {/* Aliases Drawer */}
       {aliasMailbox && (
         <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
               <div>
                 <h3 className="font-semibold text-zinc-950 text-sm">Forwarding Aliases</h3>
-                <p className="text-xs text-zinc-500 font-mono mt-0.5">{aliasMailbox}</p>
+                <p className="text-xs text-zinc-500 font-mono truncate max-w-72">{aliasMailbox}</p>
               </div>
               <button onClick={() => setAliasMailbox(null)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
@@ -419,7 +459,7 @@ export function MailboxesView() {
             <form onSubmit={handleAddAlias} className="flex gap-2">
               <input
                 type="email"
-                placeholder="alias@domain.com"
+                placeholder="alias@example.com"
                 value={newAlias}
                 onChange={(e) => setNewAlias(e.target.value)}
                 className="flex-1 px-3 py-1.5 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white font-mono text-zinc-950"
@@ -447,7 +487,6 @@ export function MailboxesView() {
                       Delete
                     </button>
                   </div>
-
                 ))
               )}
             </div>
@@ -457,7 +496,7 @@ export function MailboxesView() {
                 onClick={() => setAliasMailbox(null)}
                 className="px-3.5 py-1.5 text-xs border border-zinc-200 rounded-lg hover:bg-zinc-50 cursor-pointer text-zinc-700"
               >
-                Done
+                Close
               </button>
             </div>
           </div>
