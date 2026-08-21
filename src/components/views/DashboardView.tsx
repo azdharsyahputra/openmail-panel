@@ -13,6 +13,7 @@ import { NavTab } from "../layout/Sidebar";
 import {
   RefreshCw,
   Plus,
+  UserPlus,
   ArrowUpRight,
   Globe,
   Mail,
@@ -95,6 +96,13 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-zinc-400" : "text-zinc-500"}`} />
             <span>{loading ? "Syncing..." : "Refresh"}</span>
+          </button>
+          <button
+            onClick={() => onNavigate("mailboxes")}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-800 shadow-2xs transition-all cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5 text-zinc-700" />
+            <span>New Mailbox / User</span>
           </button>
           <button
             onClick={() => onNavigate("domains")}
