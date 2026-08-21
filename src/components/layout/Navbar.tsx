@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { api, HealthReport } from "@/lib/api";
-import { Search, LogOut } from "lucide-react";
+import { Search, LogOut, Command } from "lucide-react";
 
 export function Navbar({ onSearch }: { onSearch?: (q: string) => void }) {
   const { user, logout } = useAuth();
@@ -28,63 +28,66 @@ export function Navbar({ onSearch }: { onSearch?: (q: string) => void }) {
   const userInitial = (user?.display_name || user?.email || user?.username || "A").charAt(0).toUpperCase();
 
   return (
-    <header className="h-16 bg-[#f6f8fc] px-6 flex items-center justify-between sticky top-0 z-30 select-none">
-      {/* Brand */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shadow-xs">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-          </svg>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className="font-bold text-slate-900 tracking-tight text-base">MailOpen</span>
-          <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 font-mono">
-            Control Plane
-          </span>
+    <header className="h-14 border-b border-slate-200/80 bg-white/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30 select-none">
+      {/* Brand & Context */}
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center text-white font-bold text-xs shadow-xs tracking-tight">
+            M
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-900 tracking-tight text-sm">MailOpen</span>
+            <span className="text-slate-300 font-light">/</span>
+            <span className="text-xs text-slate-500 font-medium font-mono">Control Plane</span>
+          </div>
         </div>
       </div>
 
-      {/* Signature Gmail Pill Search */}
-      <div className="flex-1 max-w-xl mx-8 hidden md:block">
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+      {/* Modern Search Bar */}
+      <div className="flex-1 max-w-md mx-8 hidden md:block">
+        <div className="relative flex items-center">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" />
           <input
             type="text"
             placeholder="Search mailboxes, domains, queue ID..."
             onChange={(e) => onSearch?.(e.target.value)}
-            className="w-full pl-11 pr-4 py-2.5 text-xs bg-[#eaf1fb] hover:bg-[#e4ecf7] focus:bg-white border border-transparent focus:border-slate-300 rounded-full focus:outline-none focus:shadow-xs transition-all text-slate-800 placeholder:text-slate-500"
+            className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-100/70 hover:bg-slate-100 focus:bg-white border border-transparent focus:border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/5 transition-all text-slate-900 placeholder:text-slate-400 font-sans"
           />
+          <div className="absolute right-2.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white border border-slate-200/80 text-[10px] text-slate-400 font-mono">
+            <Command className="w-2.5 h-2.5" />
+            <span>K</span>
+          </div>
         </div>
       </div>
 
       {/* Right User & Cluster Status */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3.5">
         {/* Status Pill */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200/80 text-xs text-slate-600 shadow-2xs">
-          <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-500" : "bg-red-500"}`} />
-          <span className="font-medium text-[11px]">{isOnline ? "System Ready" : "Degraded"}</span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
+          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
+          <span>{isOnline ? "Engine Online" : "Degraded"}</span>
         </div>
 
         {/* User Account */}
         {user && (
-          <div className="flex items-center gap-3 pl-2">
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center ring-2 ring-blue-50">
+          <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200/80">
+            <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center border border-slate-200/80 font-mono">
               {userInitial}
             </div>
             <div className="text-left hidden sm:block">
-              <span className="font-semibold text-slate-800 text-xs block leading-tight truncate max-w-36">
+              <span className="font-semibold text-slate-800 text-xs block leading-tight truncate max-w-36 font-mono">
                 {user.email || user.username}
               </span>
-              <span className="text-[10px] text-slate-500 font-mono uppercase leading-tight">
+              <span className="text-[10px] text-slate-400 font-mono uppercase leading-tight">
                 {user.roles?.[0] || "User"}
               </span>
             </div>
             <button
               onClick={() => logout()}
               title="Sign Out"
-              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-full transition-colors cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer ml-1"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         )}

@@ -30,29 +30,27 @@ export function LoginView() {
   };
 
   return (
-    <div className="h-screen w-screen bg-[#f6f8fc] flex items-center justify-center p-4 overflow-hidden">
-      <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-8 sm:p-10 shadow-xs">
+    <div className="h-screen w-screen bg-[#f8fafc] flex items-center justify-center p-4 overflow-hidden select-none">
+      <div className="w-full max-w-sm bg-white border border-slate-200/80 rounded-2xl p-8 shadow-xs">
         {/* Brand Header */}
-        <div className="text-center mb-8">
-          <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white mx-auto mb-4 shadow-xs">
-            <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-            </svg>
+        <div className="text-center mb-6">
+          <div className="w-9 h-9 rounded-lg bg-zinc-900 flex items-center justify-center text-white font-bold text-sm mx-auto mb-3 shadow-xs tracking-tight">
+            M
           </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Sign in to MailOpen</h1>
-          <p className="text-xs text-slate-500 mt-1">Enter your credentials to access the Control Plane</p>
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">MailOpen Control Plane</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Authenticate with local or LDAP directory</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+          <div className="mb-4 p-2.5 rounded-lg bg-red-50 border border-red-200/80 text-red-700 text-xs font-mono">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Email Address / Username
+            <label className="block text-xs font-medium text-slate-700 mb-1">
+              Email / Username
             </label>
             <input
               type="text"
@@ -60,13 +58,13 @@ export function LoginView() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="admin@example.com"
               disabled={loading}
-              className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all text-slate-900 font-mono"
+              className="w-full px-3 py-2 text-xs bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-300/80 rounded-lg focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-all text-slate-900 font-mono"
               autoFocus
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-slate-700 mb-1">
               Password
             </label>
             <input
@@ -75,21 +73,21 @@ export function LoginView() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
               disabled={loading}
-              className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all text-slate-900 font-mono"
+              className="w-full px-3 py-2 text-xs bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-300/80 rounded-lg focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-all text-slate-900 font-mono"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 py-2.5 px-4 rounded-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+            className="w-full mt-2 py-2 px-4 rounded-lg bg-zinc-900 hover:bg-zinc-800 active:bg-black text-white font-medium text-xs shadow-xs transition-all disabled:opacity-50 cursor-pointer"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Authenticating..." : "Sign In to Control Plane"}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-          <span>Local DB & OpenLDAP</span>
+        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+          <span>Local & OpenLDAP</span>
           <span>TLS 1.2+ Protected</span>
         </div>
       </div>
