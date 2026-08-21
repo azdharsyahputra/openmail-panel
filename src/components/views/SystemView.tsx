@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { api, SystemDoctorReport } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
-import { RefreshCw, HardDrive, CheckCircle2 } from "lucide-react";
+import { RefreshCw, HardDrive, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export function SystemView() {
   const toast = useToast();
@@ -104,25 +104,37 @@ export function SystemView() {
             {loading ? "Running system diagnostics..." : "No diagnostic reports returned"}
           </div>
         ) : (
-          categories.map((cat, idx) => (
-            <div key={idx} className="p-4 bg-white rounded-xl border border-zinc-200/80 space-y-2 shadow-2xs">
-              <div className="flex justify-between items-center pb-2 border-b border-zinc-100 font-bold text-xs text-zinc-800 font-mono">
-                <span>{cat.status || (cat as unknown as { name: string }).name || "SUBSYSTEM"}</span>
-                <span className={cat.status === "failed" ? "text-red-500 font-normal" : "text-emerald-600 font-normal"}>
-                  ●
-                </span>
+          categories.map((cat, idx) => {
+            const catName = cat.name || cat.status || "SUBSYSTEM";
+            const isPassed = cat.passed !== false;
+
+            return (
+              <div
+                key={idx}
+                className={`p-4 rounded-xl border space-y-2 shadow-2xs ${
+                  isPassed ? "bg-white border-zinc-200/80" : "bg-red-50/20 border-red-200"
+                }`}
+              >
+                <div className="flex justify-between items-center pb-2 border-b border-zinc-100 font-bold text-xs text-zinc-800 font-mono">
+                  <span>{catName}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                    isPassed ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"
+                  }`}>
+                    {isPassed ? "PASSED" : "FAILED"}
+                  </span>
+                </div>
+                <ul className="space-y-1.5 font-mono text-[11px] text-zinc-600">
+                  {cat.checks &&
+                    Object.entries(cat.checks).map(([chkKey, chkVal], cIdx) => (
+                      <li key={cIdx} className="flex items-start justify-between gap-2">
+                        <span className="font-medium text-zinc-700">{chkKey}:</span>
+                        <span className="text-zinc-600 text-right truncate font-mono">{String(chkVal)}</span>
+                      </li>
+                    ))}
+                </ul>
               </div>
-              <ul className="space-y-1.5 font-mono text-[11px] text-zinc-600">
-                {cat.checks &&
-                  Object.entries(cat.checks).map(([chkKey, chkVal], cIdx) => (
-                    <li key={cIdx} className="flex items-start justify-between gap-2">
-                      <span className="font-medium text-zinc-700">{chkKey}:</span>
-                      <span className="text-zinc-500 text-right truncate">{chkVal}</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
