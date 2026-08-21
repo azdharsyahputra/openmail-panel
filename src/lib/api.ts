@@ -216,7 +216,17 @@ class ApiClient {
       let errMsg = response.statusText;
       try {
         const errJson = await response.json();
-        errMsg = errJson.message || errJson.error || JSON.stringify(errJson);
+        if (typeof errJson.error === "object" && errJson.error !== null && errJson.error.message) {
+          errMsg = errJson.error.message;
+        } else if (typeof errJson.error === "string") {
+          errMsg = errJson.error;
+        } else if (errJson.message && typeof errJson.message === "string") {
+          errMsg = errJson.message;
+        } else if (errJson.detail && typeof errJson.detail === "string") {
+          errMsg = errJson.detail;
+        } else {
+          errMsg = JSON.stringify(errJson);
+        }
       } catch {
         const text = await response.text();
         if (text) errMsg = text;
