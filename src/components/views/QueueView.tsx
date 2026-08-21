@@ -127,6 +127,12 @@ export function QueueView() {
     }
   };
 
+  const formatSize = (bytes?: number) => {
+    if (bytes === undefined || bytes === null || isNaN(bytes)) return "0 B";
+    if (bytes < 1024) return `${bytes} B`;
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  };
+
   // Pagination Calculations
   const totalPages = Math.ceil(messages.length / pageSize) || 1;
   const paginatedMessages = messages.slice((page - 1) * pageSize, page * pageSize);
@@ -213,12 +219,12 @@ export function QueueView() {
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-zinc-50/80 border-b border-zinc-200 text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
-                <th className="py-3 px-4">Queue ID</th>
+                <th className="py-3 px-4 w-32">Queue ID</th>
                 <th className="py-3 px-4">Sender</th>
                 <th className="py-3 px-4">Recipient</th>
-                <th className="py-3 px-4">Size</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right font-sans">Actions</th>
+                <th className="py-3 px-4 w-24 text-center">Size</th>
+                <th className="py-3 px-4 w-28 text-center">Status</th>
+                <th className="py-3 px-4 text-right w-64">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -229,47 +235,50 @@ export function QueueView() {
                   </td>
                 </tr>
               ) : (
-                paginatedMessages.map((msg) => (
-                  <tr key={msg.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-2.5 px-4 font-bold text-zinc-950">{msg.id}</td>
-                    <td className="py-2.5 px-4 text-zinc-700 truncate max-w-40">{msg.sender || "<empty>"}</td>
-                    <td className="py-2.5 px-4 text-zinc-700 truncate max-w-40">{msg.recipient}</td>
-                    <td className="py-2.5 px-4 text-zinc-500">{(msg.size_bytes / 1024).toFixed(1)} KB</td>
-                    <td className="py-2.5 px-4">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] uppercase font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
-                        {msg.status}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-4 text-right font-sans">
-                      <div className="flex items-center justify-end gap-1 text-xs">
-                        <button
-                          onClick={() => handleInspect(msg.id)}
-                          className="px-2 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
-                        >
-                          Inspect
-                        </button>
-                        <button
-                          onClick={() => handleRetry(msg.id)}
-                          className="px-2 py-1 rounded-md text-emerald-600 hover:bg-emerald-50 font-medium cursor-pointer transition-colors"
-                        >
-                          Retry
-                        </button>
-                        <button
-                          onClick={() => (msg.status === "hold" ? handleRelease(msg.id) : handleHold(msg.id))}
-                          className="px-2 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
-                        >
-                          {msg.status === "hold" ? "Release" : "Hold"}
-                        </button>
-                        <button
-                          onClick={() => setMessageToDelete(msg.id)}
-                          className="px-2 py-1 rounded-md text-red-600 hover:bg-red-50 font-medium cursor-pointer transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                paginatedMessages.map((msg) => {
+                  const qId = msg.queue_id || msg.id || "";
+                  return (
+                    <tr key={qId} className="hover:bg-zinc-50/50 transition-colors">
+                      <td className="py-2.5 px-4 font-bold text-zinc-950">{qId}</td>
+                      <td className="py-2.5 px-4 text-zinc-700 truncate max-w-44">{msg.sender || "<empty>"}</td>
+                      <td className="py-2.5 px-4 text-zinc-700 truncate max-w-44">{msg.recipient}</td>
+                      <td className="py-2.5 px-4 text-center text-zinc-500">{formatSize(msg.size || msg.size_bytes)}</td>
+                      <td className="py-2.5 px-4 text-center">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] uppercase font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                          {msg.status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-xs font-sans">
+                          <button
+                            onClick={() => handleInspect(qId)}
+                            className="px-2 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
+                          >
+                            Inspect
+                          </button>
+                          <button
+                            onClick={() => handleRetry(qId)}
+                            className="px-2 py-1 rounded-md text-emerald-600 hover:bg-emerald-50 font-medium cursor-pointer transition-colors"
+                          >
+                            Retry
+                          </button>
+                          <button
+                            onClick={() => (msg.status === "hold" ? handleRelease(qId) : handleHold(qId))}
+                            className="px-2 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
+                          >
+                            {msg.status === "hold" ? "Release" : "Hold"}
+                          </button>
+                          <button
+                            onClick={() => setMessageToDelete(qId)}
+                            className="px-2 py-1 rounded-md text-red-600 hover:bg-red-50 font-medium cursor-pointer transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -145,9 +145,9 @@ export function DomainsView() {
   };
 
   const formatDate = (isoString?: string) => {
-    if (!isoString) return "—";
+    if (!isoString) return "System Init";
     const d = new Date(isoString);
-    if (isNaN(d.getTime()) || d.getFullYear() <= 2000) return "—";
+    if (isNaN(d.getTime()) || d.getFullYear() <= 2000) return "System Init";
     return d.toLocaleDateString();
   };
 
@@ -197,9 +197,9 @@ export function DomainsView() {
             <thead className="bg-zinc-50/80 border-b border-zinc-200 font-mono text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
                 <th className="py-3 px-4">Domain Name</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Created Date</th>
-                <th className="py-3 px-4 text-right font-sans">Actions</th>
+                <th className="py-3 px-4 w-32 text-center">Status</th>
+                <th className="py-3 px-4 w-40 text-center">Created Date</th>
+                <th className="py-3 px-4 text-right w-64">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -213,16 +213,16 @@ export function DomainsView() {
                 paginatedDomains.map((dom) => (
                   <tr key={dom.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="py-3 px-4 font-medium text-zinc-950 font-mono text-xs">{dom.name}</td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 text-center">
                       <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
                         {dom.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-zinc-500 font-mono text-[11px]">
+                    <td className="py-3 px-4 text-center text-zinc-500 font-mono text-[11px]">
                       {formatDate(dom.created_at)}
                     </td>
-                    <td className="py-3 px-4 text-right font-sans">
-                      <div className="flex items-center justify-end gap-1.5 text-xs">
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5 text-xs font-sans">
                         <button
                           onClick={() => openDomainDetails(dom.name, "dns")}
                           className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"

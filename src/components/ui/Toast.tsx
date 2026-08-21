@@ -55,8 +55,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, info, warning }}>
       {children}
-      {/* Toast Container */}
-      <div className="fixed bottom-5 right-5 z-100 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none select-none">
+      {/* Floating Toast Container */}
+      <div className="fixed bottom-6 right-6 z-100 flex flex-col gap-3 max-w-sm w-full pointer-events-none select-none">
         {toasts.map((toast) => {
           const isSuccess = toast.type === "success";
           const isError = toast.type === "error";
@@ -65,14 +65,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto p-4 rounded-xl border shadow-xl bg-white flex items-start gap-3 transition-all duration-300 animate-in slide-in-from-bottom-5 fade-in ${
+              className={`toast-animate-in pointer-events-auto p-4 rounded-2xl border shadow-2xl bg-white/95 backdrop-blur-md flex items-start gap-3 transition-all ${
                 isSuccess
-                  ? "border-emerald-200 text-zinc-900"
+                  ? "border-emerald-500/20 text-zinc-900 shadow-emerald-500/5"
                   : isError
-                  ? "border-red-200 text-zinc-900"
+                  ? "border-red-500/20 text-zinc-900 shadow-red-500/5"
                   : isWarning
-                  ? "border-amber-200 text-zinc-900"
-                  : "border-zinc-200 text-zinc-900"
+                  ? "border-amber-500/20 text-zinc-900 shadow-amber-500/5"
+                  : "border-zinc-200 text-zinc-900 shadow-zinc-500/5"
               }`}
             >
               {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />}
@@ -81,7 +81,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               {!isSuccess && !isError && !isWarning && <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />}
 
               <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-semibold leading-tight">{toast.title}</h4>
+                <h4 className="text-xs font-semibold text-zinc-950 tracking-tight leading-tight">{toast.title}</h4>
                 {toast.message && (
                   <p className="text-[11px] text-zinc-500 mt-1 font-mono break-all leading-normal">
                     {toast.message}
@@ -91,7 +91,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-zinc-400 hover:text-zinc-700 p-0.5 rounded cursor-pointer"
+                className="text-zinc-400 hover:text-zinc-700 p-0.5 rounded cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

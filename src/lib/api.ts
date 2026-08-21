@@ -68,7 +68,7 @@ export interface AliasItem {
   mailbox_id: string;
   source: string;
   destination: string;
-  alias?: string; // helper
+  alias?: string;
   created_at: string;
 }
 
@@ -76,18 +76,25 @@ export interface QueueSummary {
   active: number;
   deferred: number;
   hold: number;
+  bounce?: number;
   corrupt: number;
+  incoming?: number;
   total: number;
 }
 
 export interface QueueMessage {
-  id: string;
+  queue_id: string;
+  id?: string;
   sender: string;
   recipient: string;
-  size_bytes: number;
-  arrival_time: string;
+  size: number;
+  size_bytes?: number;
+  arrival_date: string;
+  arrival_time?: string;
   status: string;
+  reason?: string;
   error_message?: string;
+  age?: string;
 }
 
 export interface AuditLogItem {
@@ -404,8 +411,17 @@ class ApiClient {
     const res = await this.request<{ data?: QueueMessage[]; messages?: QueueMessage[] } | QueueMessage[]>(
       `/api/v1/queue${query}`
     );
-    if (Array.isArray(res)) return res;
-    return res.data || res.messages || [];
+    const list = Array.isArray(res) ? res : res.data || res.messages || [];
+    return list.map((m) => ({
+      ...m,
+      id: m.queue_id || m.id || "",
+      queue_id: m.queue_id || m.id || "",
+      size_bytes: typeof m.size === "number" ? m.size : m.size_bytes || 0,
+      size: typeof m.size === "number" ? m.size : m.size_bytes || 0,
+      arrival_time: m.arrival_date || m.arrival_time || "",
+      arrival_date: m.arrival_date || m.arrival_time || "",
+      error_message: m.reason || m.error_message || "",
+    }));
   }
 
   public async inspectQueueMessage(id: string): Promise<{ content: string }> {

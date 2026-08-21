@@ -224,10 +224,10 @@ export function MailboxesView() {
             <thead className="bg-zinc-50/80 border-b border-zinc-200 font-mono text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
                 <th className="py-3 px-4">Mailbox Account</th>
-                <th className="py-3 px-4">Provider</th>
-                <th className="py-3 px-4">Storage Quota</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right font-sans">Actions</th>
+                <th className="py-3 px-4 w-28 text-center">Provider</th>
+                <th className="py-3 px-4 w-44">Storage Quota</th>
+                <th className="py-3 px-4 w-28 text-center">Status</th>
+                <th className="py-3 px-4 text-right w-72">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -248,7 +248,7 @@ export function MailboxesView() {
                           Provision: {mb.provisioning_status || "ready"}
                         </span>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 text-center">
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-zinc-100 text-zinc-700 border border-zinc-200 uppercase">
                           {mb.identity_provider || "local"}
                         </span>
@@ -267,7 +267,7 @@ export function MailboxesView() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 text-center">
                         <span
                           className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-medium ${
                             mb.status === "active"
@@ -278,8 +278,8 @@ export function MailboxesView() {
                           {mb.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right font-sans">
-                        <div className="flex items-center justify-end gap-1.5 text-xs">
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-xs font-sans">
                           <button
                             onClick={() => openAliasDrawer(mb.email)}
                             className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
