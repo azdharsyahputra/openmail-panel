@@ -106,7 +106,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
         </div>
       </div>
 
-      {/* KPI Metric Cards Grid (Strict White/Black/Red/Green) */}
+      {/* KPI Metric Cards Grid */}
       <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* Domains Card */}
         <div
@@ -115,19 +115,16 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
         >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center justify-center shrink-0">
                 <Globe className="w-4 h-4" />
               </div>
               <span className="text-xs font-semibold text-zinc-900 truncate">Domains</span>
             </div>
-            <span className="text-[11px] font-mono font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 flex items-center gap-0.5 whitespace-nowrap shrink-0">
-              {activeDomainsCount} active
-              <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </span>
+            <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold text-zinc-950 font-mono tracking-tight">{domains.length}</div>
-            <div className="text-[11px] text-zinc-400 font-mono mt-0.5">DNS & DKIM configured</div>
+            <div className="text-[11px] text-zinc-400 font-mono mt-0.5">{activeDomainsCount} active · DNS & DKIM ok</div>
           </div>
         </div>
 
@@ -143,14 +140,11 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
               </div>
               <span className="text-xs font-semibold text-zinc-900 truncate">Mailboxes</span>
             </div>
-            <span className="text-[11px] font-mono font-medium text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 flex items-center gap-0.5 whitespace-nowrap shrink-0">
-              {activeMailboxesCount} active
-              <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </span>
+            <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold text-zinc-950 font-mono tracking-tight">{mailboxes.length}</div>
-            <div className="text-[11px] text-zinc-400 font-mono mt-0.5">Dovecot Maildir accounts</div>
+            <div className="text-[11px] text-zinc-400 font-mono mt-0.5">{activeMailboxesCount} active accounts</div>
           </div>
         </div>
 
@@ -166,21 +160,14 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
               </div>
               <span className="text-xs font-semibold text-zinc-900 truncate">Mail Queue</span>
             </div>
-            <span className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border flex items-center gap-0.5 whitespace-nowrap shrink-0 ${
-              (queueSummary?.deferred || 0) > 0
-                ? "bg-red-500/10 text-red-700 border-red-500/20"
-                : "bg-zinc-100 text-zinc-800 border-zinc-200"
-            }`}>
-              {queueSummary?.deferred || 0} deferred
-              <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </span>
+            <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold text-zinc-950 font-mono tracking-tight">
               {queueSummary?.total || 0}
             </div>
             <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
-              {queueSummary?.active || 0} active · {queueSummary?.hold || 0} hold
+              {queueSummary?.deferred || 0} deferred · {queueSummary?.active || 0} active
             </div>
           </div>
         </div>
@@ -197,16 +184,14 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
               </div>
               <span className="text-xs font-semibold text-zinc-900 truncate">Storage Pool</span>
             </div>
-            <span className="text-[11px] font-mono font-medium text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 whitespace-nowrap shrink-0">
-              {storagePercent}% used
-            </span>
+            <ArrowUpRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
           </div>
           <div className="mt-3">
             <div className="text-2xl font-bold text-zinc-950 font-mono tracking-tight">
               {formatBytes(totalUsedBytes)}
             </div>
             <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
-              of {formatBytes(totalQuotaBytes)} allocated quota
+              {storagePercent}% used of {formatBytes(totalQuotaBytes)} pool
             </div>
           </div>
         </div>
