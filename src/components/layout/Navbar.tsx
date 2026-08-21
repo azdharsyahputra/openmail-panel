@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { api, HealthReport } from "@/lib/api";
+import { Search, LogOut } from "lucide-react";
 
 export function Navbar({ onSearch }: { onSearch?: (q: string) => void }) {
   const { user, logout } = useAuth();
@@ -24,53 +25,66 @@ export function Navbar({ onSearch }: { onSearch?: (q: string) => void }) {
   }, []);
 
   const isOnline = health?.status === "healthy" || health?.status === "live";
+  const userInitial = (user?.display_name || user?.email || user?.username || "A").charAt(0).toUpperCase();
 
   return (
-    <header className="h-14 border-b border-slate-200 bg-white px-6 flex items-center justify-between sticky top-0 z-30">
-      {/* Brand & Context */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-sm tracking-tight">
-            M
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-900 tracking-tight text-sm">MailOpen</span>
-            <span className="text-slate-300">/</span>
-            <span className="text-xs text-slate-600 font-medium">Admin Console</span>
-          </div>
+    <header className="h-16 bg-[#f6f8fc] px-6 flex items-center justify-between sticky top-0 z-30 select-none">
+      {/* Brand */}
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shadow-xs">
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+          </svg>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className="font-bold text-slate-900 tracking-tight text-base">MailOpen</span>
+          <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 font-mono">
+            Control Plane
+          </span>
         </div>
       </div>
 
-      {/* Center Search */}
-      <div className="flex-1 max-w-sm mx-6 hidden md:block">
-        <input
-          type="text"
-          placeholder="Search mailboxes, domains, queue..."
-          onChange={(e) => onSearch?.(e.target.value)}
-          className="w-full px-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition-colors text-slate-800 placeholder:text-slate-400"
-        />
+      {/* Signature Gmail Pill Search */}
+      <div className="flex-1 max-w-xl mx-8 hidden md:block">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search mailboxes, domains, queue ID..."
+            onChange={(e) => onSearch?.(e.target.value)}
+            className="w-full pl-11 pr-4 py-2.5 text-xs bg-[#eaf1fb] hover:bg-[#e4ecf7] focus:bg-white border border-transparent focus:border-slate-300 rounded-full focus:outline-none focus:shadow-xs transition-all text-slate-800 placeholder:text-slate-500"
+          />
+        </div>
       </div>
 
-      {/* Right Controls */}
-      <div className="flex items-center gap-4">
+      {/* Right User & Cluster Status */}
+      <div className="flex items-center gap-3">
         {/* Status Pill */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-[11px] font-mono">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200/80 text-xs text-slate-600 shadow-2xs">
           <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-500" : "bg-red-500"}`} />
-          <span className="text-slate-600">{isOnline ? "API Online" : "API Offline"}</span>
+          <span className="font-medium text-[11px]">{isOnline ? "System Ready" : "Degraded"}</span>
         </div>
 
-        {/* User Session */}
+        {/* User Account */}
         {user && (
-          <div className="flex items-center gap-3 pl-3 border-l border-slate-200 text-xs">
-            <div className="text-right">
-              <span className="font-semibold text-slate-800 block">{user.email || user.username}</span>
-              <span className="text-[10px] text-slate-600 uppercase font-mono">{user.roles?.[0] || "User"}</span>
+          <div className="flex items-center gap-3 pl-2">
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center ring-2 ring-blue-50">
+              {userInitial}
+            </div>
+            <div className="text-left hidden sm:block">
+              <span className="font-semibold text-slate-800 text-xs block leading-tight truncate max-w-36">
+                {user.email || user.username}
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono uppercase leading-tight">
+                {user.roles?.[0] || "User"}
+              </span>
             </div>
             <button
               onClick={() => logout()}
-              className="text-xs font-medium text-slate-600 hover:text-red-600 transition-colors cursor-pointer"
+              title="Sign Out"
+              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-full transition-colors cursor-pointer"
             >
-              Sign out
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         )}

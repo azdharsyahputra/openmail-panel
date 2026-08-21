@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { api, SystemDoctorReport } from "@/lib/api";
+import { RefreshCw, HardDrive, CheckCircle2 } from "lucide-react";
 
 export function SystemView() {
   const [doctorReport, setDoctorReport] = useState<SystemDoctorReport | null>(null);
@@ -34,52 +35,55 @@ export function SystemView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-base font-bold text-slate-900">System Doctor & Maintenance</h1>
-          <p className="text-xs text-slate-500">Comprehensive health diagnostics, schema status, and disaster recovery</p>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">System Health & Doctor</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Comprehensive engine diagnostics, schema status, and disaster recovery</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={loadDoctor}
             disabled={loading}
-            className="px-3 py-1 text-xs font-medium bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-700 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-white hover:bg-slate-50 border border-slate-200 rounded-full text-slate-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
           >
-            {loading ? "Diagnosing..." : "Run Doctor"}
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <span>{loading ? "Diagnosing..." : "Run Doctor"}</span>
           </button>
           <button
             onClick={handleCreateBackup}
             disabled={creatingBackup}
-            className="px-3 py-1 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white rounded cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xs transition-all cursor-pointer disabled:opacity-50"
           >
-            {creatingBackup ? "Creating..." : "Create Backup"}
+            <HardDrive className="w-3.5 h-3.5" />
+            <span>{creatingBackup ? "Creating..." : "Create Backup"}</span>
           </button>
         </div>
       </div>
 
       {backupSuccess && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono rounded">
-          Snapshot created: {backupSuccess}
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono rounded-2xl flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>Snapshot created: {backupSuccess}</span>
         </div>
       )}
 
       {/* Engine Status Banner */}
-      <div className="p-4 bg-white border border-slate-200 rounded flex justify-between items-center text-xs font-mono">
+      <div className="p-5 bg-[#f8fafd] border border-slate-200/80 rounded-2xl flex justify-between items-center text-xs font-mono shadow-2xs">
         <div>
-          <span className="font-bold text-slate-800">MailOpen Cluster Engine</span>
+          <span className="font-bold text-slate-900 text-sm">MailOpen Engine Cluster</span>
           <span className="text-slate-500 block text-[11px] mt-0.5">
             Core: v0.9.0-GA · Architecture: amd64/arm64 · Schema: v003_applied
           </span>
         </div>
-        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
           HEALTHY
         </span>
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           {
             title: "Postfix Transport (MTA)",
@@ -136,14 +140,14 @@ export function SystemView() {
             ],
           },
         ].map((cat, idx) => (
-          <div key={idx} className="p-3.5 bg-white border border-slate-200 rounded space-y-2">
-            <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 font-bold text-xs text-slate-800 font-mono">
+          <div key={idx} className="p-4 rounded-2xl border border-slate-200/80 space-y-2 shadow-2xs">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100 font-bold text-xs text-slate-800 font-mono">
               <span>{cat.title}</span>
               <span className="text-emerald-600 font-normal">●</span>
             </div>
-            <ul className="space-y-1 font-mono text-[11px] text-slate-600">
+            <ul className="space-y-1.5 font-mono text-[11px] text-slate-600">
               {cat.checks.map((chk, cIdx) => (
-                <li key={cIdx} className="flex items-start gap-1">
+                <li key={cIdx} className="flex items-start gap-1.5">
                   <span className="text-emerald-500 font-bold">✓</span>
                   <span>{chk}</span>
                 </li>

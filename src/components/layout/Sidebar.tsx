@@ -1,6 +1,16 @@
 "use client";
 
 import React from "react";
+import {
+  LayoutDashboard,
+  Globe,
+  Inbox,
+  Users,
+  Layers,
+  ShieldCheck,
+  Activity,
+  Server,
+} from "lucide-react";
 
 export type NavTab =
   | "dashboard"
@@ -18,71 +28,48 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
-  const navSections: {
-    title: string;
-    items: { id: NavTab; label: string }[];
-  }[] = [
-    {
-      title: "Core",
-      items: [
-        { id: "dashboard", label: "Overview" },
-        { id: "domains", label: "Domains & DNS" },
-        { id: "mailboxes", label: "Mailboxes & Aliases" },
-      ],
-    },
-    {
-      title: "Services",
-      items: [
-        { id: "identity", label: "Identity & LDAP" },
-        { id: "queue", label: "Mail Queue" },
-        { id: "security", label: "Security & Audit" },
-      ],
-    },
-    {
-      title: "Operations",
-      items: [
-        { id: "monitoring", label: "Monitoring" },
-        { id: "system", label: "System Doctor" },
-      ],
-    },
+  const navItems: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: "dashboard", label: "Overview", icon: LayoutDashboard },
+    { id: "domains", label: "Domains & DNS", icon: Globe },
+    { id: "mailboxes", label: "Mailboxes & Aliases", icon: Inbox },
+    { id: "identity", label: "Identity & LDAP", icon: Users },
+    { id: "queue", label: "Mail Queue", icon: Layers },
+    { id: "security", label: "Security Doctor", icon: ShieldCheck },
+    { id: "monitoring", label: "Monitoring", icon: Activity },
+    { id: "system", label: "System Health", icon: Server },
   ];
 
   return (
-    <aside className="w-56 bg-slate-50/50 border-r border-slate-200 h-[calc(100vh-3.5rem)] p-3 flex flex-col justify-between overflow-y-auto">
-      <div className="space-y-4">
-        {navSections.map((section, sIdx) => (
-          <div key={sIdx} className="space-y-0.5">
-            <div className="px-2.5 py-1 text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">
-              {section.title}
-            </div>
-            {section.items.map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => onSelectTab(item.id)}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                    isActive
-                      ? "bg-slate-200 text-slate-900 font-semibold"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        ))}
+    <aside className="w-60 bg-[#f6f8fc] h-[calc(100vh-4rem)] p-3 pr-4 flex flex-col justify-between select-none">
+      <div className="space-y-1">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onSelectTab(item.id)}
+              className={`w-full flex items-center gap-3.5 px-4 py-2.5 rounded-full text-xs transition-all cursor-pointer ${
+                isActive
+                  ? "bg-[#c2e7ff] text-[#001d35] font-bold shadow-2xs"
+                  : "text-slate-700 hover:bg-[#e8eaed]/70 font-medium"
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? "text-[#001d35]" : "text-slate-500"}`} />
+              <span className="truncate">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="p-2.5 bg-white rounded border border-slate-200 text-[11px] font-mono text-slate-500 space-y-1">
+      <div className="p-3 bg-white rounded-2xl border border-slate-200/60 shadow-2xs text-[11px] font-mono text-slate-500 space-y-1">
         <div className="flex justify-between">
           <span>Engine</span>
-          <span className="font-semibold text-slate-700">v0.9.0-GA</span>
+          <span className="font-semibold text-slate-800">v0.9.0-GA</span>
         </div>
         <div className="flex justify-between">
           <span>Control Plane</span>
-          <span className="text-blue-600 font-semibold">W3.3</span>
+          <span className="text-blue-600 font-semibold">W3.3 Active</span>
         </div>
       </div>
     </aside>
