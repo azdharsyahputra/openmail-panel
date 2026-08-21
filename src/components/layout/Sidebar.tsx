@@ -40,8 +40,8 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
   ];
 
   return (
-    <aside className="w-60 bg-[#f6f8fc] h-[calc(100vh-4rem)] p-3 pr-4 flex flex-col justify-between select-none">
-      <div className="space-y-1">
+    <aside className="w-56 h-full pb-1 flex flex-col justify-between select-none shrink-0 overflow-y-auto">
+      <div className="space-y-1 pr-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -62,7 +62,7 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
         })}
       </div>
 
-      <div className="p-3 bg-white rounded-2xl border border-slate-200/60 shadow-2xs text-[11px] font-mono text-slate-500 space-y-1">
+      <div className="p-3 bg-white rounded-2xl border border-slate-200/60 shadow-2xs text-[11px] font-mono text-slate-500 space-y-1 mr-1">
         <div className="flex justify-between">
           <span>Engine</span>
           <span className="font-semibold text-slate-800">v0.9.0-GA</span>

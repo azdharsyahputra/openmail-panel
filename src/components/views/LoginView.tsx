@@ -30,7 +30,7 @@ export function LoginView() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] flex items-center justify-center p-4">
+    <div className="h-screen w-screen bg-[#f6f8fc] flex items-center justify-center p-4 overflow-hidden">
       <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-8 sm:p-10 shadow-xs">
         {/* Brand Header */}
         <div className="text-center mb-8">
