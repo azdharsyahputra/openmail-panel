@@ -2,9 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { api, QueueSummary, QueueMessage } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { RefreshCw, Send, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function QueueView() {
+  const toast = useToast();
   const [summary, setSummary] = useState<QueueSummary | null>(null);
   const [messages, setMessages] = useState<QueueMessage[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("all");
@@ -14,6 +17,13 @@ export function QueueView() {
   // Pagination State
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Modals State
+  const [showFlushModal, setShowFlushModal] = useState(false);
+  const [flushing, setFlushing] = useState(false);
+
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
+  const [deletingMsg, setDeletingMsg] = useState(false);
 
   // Inspector Modal
   const [inspectingId, setInspectingId] = useState<string | null>(null);
@@ -31,7 +41,9 @@ export function QueueView() {
       setSummary(sum);
       setMessages(msgs);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to load mail queue");
+      const msg = err instanceof Error ? err.message : "Failed to load mail queue";
+      setError(msg);
+      toast.error("Queue Error", msg);
     } finally {
       setLoading(false);
     }
@@ -42,51 +54,62 @@ export function QueueView() {
     loadData();
   }, [activeFilter]);
 
-  const handleFlush = async () => {
-    if (!confirm("Flush all mail queues immediately?")) return;
+  const confirmFlushQueue = async () => {
     try {
+      setFlushing(true);
       await api.flushQueue();
-      alert("Queue flush triggered successfully.");
+      toast.success("Queue Flushed", "Triggered immediate delivery attempt for all queued mail.");
+      setShowFlushModal(false);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to flush queue");
+      toast.error("Flush Failed", err instanceof Error ? err.message : "Failed to flush queue");
+    } finally {
+      setFlushing(false);
     }
   };
 
   const handleRetry = async (id: string) => {
     try {
       await api.retryQueueMessage(id);
+      toast.success("Message Retrying", `Message ${id} scheduled for immediate retry.`);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to retry message");
+      toast.error("Retry Failed", err instanceof Error ? err.message : "Failed to retry message");
     }
   };
 
   const handleHold = async (id: string) => {
     try {
       await api.holdQueueMessage(id);
+      toast.warning("Message Held", `Message ${id} placed on administrative hold.`);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to hold message");
+      toast.error("Hold Failed", err instanceof Error ? err.message : "Failed to hold message");
     }
   };
 
   const handleRelease = async (id: string) => {
     try {
       await api.releaseQueueMessage(id);
+      toast.success("Message Released", `Message ${id} released from hold back to active queue.`);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to release message");
+      toast.error("Release Failed", err instanceof Error ? err.message : "Failed to release message");
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(`Delete message ${id} from queue?`)) return;
+  const confirmDeleteMessage = async () => {
+    if (!messageToDelete) return;
     try {
-      await api.deleteQueueMessage(id);
+      setDeletingMsg(true);
+      await api.deleteQueueMessage(messageToDelete);
+      toast.success("Message Purged", `Message ${messageToDelete} deleted from Postfix queue.`);
+      setMessageToDelete(null);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to delete queue message");
+      toast.error("Delete Failed", err instanceof Error ? err.message : "Failed to delete message");
+    } finally {
+      setDeletingMsg(false);
     }
   };
 
@@ -128,7 +151,7 @@ export function QueueView() {
             <span>Refresh</span>
           </button>
           <button
-            onClick={handleFlush}
+            onClick={() => setShowFlushModal(true)}
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-xs transition-all cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
@@ -238,7 +261,7 @@ export function QueueView() {
                           {msg.status === "hold" ? "Release" : "Hold"}
                         </button>
                         <button
-                          onClick={() => handleDelete(msg.id)}
+                          onClick={() => setMessageToDelete(msg.id)}
                           className="px-2 py-1 rounded-md text-red-600 hover:bg-red-50 font-medium cursor-pointer transition-colors"
                         >
                           Delete
@@ -304,7 +327,7 @@ export function QueueView() {
 
       {/* Inspect Modal */}
       {inspectingId && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl max-h-[85vh] flex flex-col justify-between space-y-4">
             <div>
               <div className="flex justify-between items-center pb-3 border-b border-zinc-100 mb-3">
@@ -328,6 +351,30 @@ export function QueueView() {
           </div>
         </div>
       )}
+
+      {/* Flush Queue Modal */}
+      <ConfirmModal
+        isOpen={showFlushModal}
+        title="Flush Mail Queue"
+        message="Are you sure you want to trigger an immediate delivery attempt for all deferred and active messages currently in the Postfix queue?"
+        confirmLabel="Flush Queue"
+        variant="warning"
+        loading={flushing}
+        onConfirm={confirmFlushQueue}
+        onCancel={() => setShowFlushModal(false)}
+      />
+
+      {/* Delete Queue Message Modal */}
+      <ConfirmModal
+        isOpen={Boolean(messageToDelete)}
+        title="Delete Queued Message"
+        message={`Are you sure you want to permanently delete message "${messageToDelete}" from the Postfix transport queue?`}
+        confirmLabel="Delete Message"
+        variant="danger"
+        loading={deletingMsg}
+        onConfirm={confirmDeleteMessage}
+        onCancel={() => setMessageToDelete(null)}
+      />
     </div>
   );
 }

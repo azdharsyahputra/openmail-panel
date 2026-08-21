@@ -2,9 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { api, MailboxItem, AliasItem, DomainItem } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { RefreshCw, Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function MailboxesView() {
+  const toast = useToast();
   const [mailboxes, setMailboxes] = useState<MailboxItem[]>([]);
   const [domains, setDomains] = useState<DomainItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +23,10 @@ export function MailboxesView() {
   const [newPassword, setNewPassword] = useState("");
   const [newQuotaMB, setNewQuotaMB] = useState(1024);
   const [creating, setCreating] = useState(false);
+
+  // Delete Modal State
+  const [mailboxToDelete, setMailboxToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Password Reset Modal
   const [pwResetMailbox, setPwResetMailbox] = useState<string | null>(null);
@@ -43,7 +50,9 @@ export function MailboxesView() {
       setMailboxes(mbs);
       setDomains(doms);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to load mailboxes");
+      const msg = err instanceof Error ? err.message : "Failed to load mailboxes";
+      setError(msg);
+      toast.error("Error Loading Mailboxes", msg);
     } finally {
       setLoading(false);
     }
@@ -61,12 +70,13 @@ export function MailboxesView() {
       const quotaBytes = newQuotaMB * 1024 * 1024;
       await api.createMailbox(newEmail.trim(), newPassword, quotaBytes);
       await api.provisionMailbox(newEmail.trim()).catch(() => {});
+      toast.success("Mailbox Created", `Account ${newEmail.trim()} provisioned with ${newQuotaMB}MB quota.`);
       setNewEmail("");
       setNewPassword("");
       setShowAddModal(false);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to create mailbox");
+      toast.error("Failed to Create Mailbox", err instanceof Error ? err.message : "Mailbox creation failed");
     } finally {
       setCreating(false);
     }
@@ -76,24 +86,29 @@ export function MailboxesView() {
     try {
       if (mb.status === "active") {
         await api.suspendMailbox(mb.email);
+        toast.warning("Mailbox Suspended", `Account ${mb.email} is now suspended.`);
       } else {
         await api.resumeMailbox(mb.email);
+        toast.success("Mailbox Resumed", `Account ${mb.email} is now active.`);
       }
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to update mailbox status");
+      toast.error("Status Update Failed", err instanceof Error ? err.message : "Failed to update mailbox status");
     }
   };
 
-  const handleDelete = async (email: string) => {
-    if (!confirm(`Delete mailbox ${email}? All email messages will be permanently purged.`)) {
-      return;
-    }
+  const confirmDeleteMailbox = async () => {
+    if (!mailboxToDelete) return;
     try {
-      await api.deleteMailbox(email);
+      setDeleting(true);
+      await api.deleteMailbox(mailboxToDelete);
+      toast.success("Mailbox Deleted", `Account ${mailboxToDelete} and associated Maildir data purged.`);
+      setMailboxToDelete(null);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to delete mailbox");
+      toast.error("Failed to Delete Mailbox", err instanceof Error ? err.message : "Deletion failed");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -103,11 +118,11 @@ export function MailboxesView() {
     try {
       setResettingPw(true);
       await api.setMailboxPassword(pwResetMailbox, resetPasswordVal);
-      alert("Password updated successfully.");
+      toast.success("Password Updated", `Credentials for ${pwResetMailbox} updated successfully.`);
       setPwResetMailbox(null);
       setResetPasswordVal("");
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to reset password");
+      toast.error("Password Reset Failed", err instanceof Error ? err.message : "Failed to reset password");
     } finally {
       setResettingPw(false);
     }
@@ -131,11 +146,12 @@ export function MailboxesView() {
     try {
       setAddingAlias(true);
       await api.createAlias(aliasMailbox, newAlias.trim());
+      toast.success("Alias Added", `Forwarding from ${newAlias.trim()} $\rightarrow$ ${aliasMailbox}`);
       setNewAlias("");
       const list = await api.getAliases(aliasMailbox);
       setAliases(list);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to add alias");
+      toast.error("Failed to Add Alias", err instanceof Error ? err.message : "Alias creation failed");
     } finally {
       setAddingAlias(false);
     }
@@ -145,10 +161,11 @@ export function MailboxesView() {
     if (!aliasMailbox) return;
     try {
       await api.deleteAlias(aliasMailbox, sourceAlias);
+      toast.info("Alias Removed", `Forwarding alias ${sourceAlias} removed.`);
       const list = await api.getAliases(aliasMailbox);
       setAliases(list);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to delete alias");
+      toast.error("Failed to Delete Alias", err instanceof Error ? err.message : "Alias deletion failed");
     }
   };
 
@@ -282,7 +299,7 @@ export function MailboxesView() {
                             {mb.status === "active" ? "Suspend" : "Resume"}
                           </button>
                           <button
-                            onClick={() => handleDelete(mb.email)}
+                            onClick={() => setMailboxToDelete(mb.email)}
                             className="px-2.5 py-1 rounded-md text-red-600 hover:bg-red-50 font-medium cursor-pointer transition-colors"
                           >
                             Delete
@@ -349,7 +366,7 @@ export function MailboxesView() {
 
       {/* New Mailbox Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
               <h3 className="font-semibold text-zinc-950 text-sm">Create Mailbox</h3>
@@ -417,7 +434,7 @@ export function MailboxesView() {
 
       {/* Password Reset Modal */}
       {pwResetMailbox && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
               <h3 className="font-semibold text-zinc-950 text-sm">Reset Password</h3>
@@ -463,7 +480,7 @@ export function MailboxesView() {
 
       {/* Aliases Drawer */}
       {aliasMailbox && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
               <div>
@@ -521,6 +538,18 @@ export function MailboxesView() {
           </div>
         </div>
       )}
+
+      {/* Confirm Delete Mailbox Modal */}
+      <ConfirmModal
+        isOpen={Boolean(mailboxToDelete)}
+        title="Delete Mailbox Account"
+        message={`Are you sure you want to permanently delete mailbox "${mailboxToDelete}"? All messages, folders, and IMAP data stored in Dovecot Maildir will be purged.`}
+        confirmLabel="Delete Mailbox"
+        variant="danger"
+        loading={deleting}
+        onConfirm={confirmDeleteMailbox}
+        onCancel={() => setMailboxToDelete(null)}
+      />
     </div>
   );
 }

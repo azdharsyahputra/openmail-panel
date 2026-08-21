@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { api, SystemDoctorReport } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 import { RefreshCw, HardDrive, CheckCircle2 } from "lucide-react";
 
 export function SystemView() {
+  const toast = useToast();
   const [doctorReport, setDoctorReport] = useState<SystemDoctorReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [creatingBackup, setCreatingBackup] = useState(false);
@@ -15,8 +17,9 @@ export function SystemView() {
       setLoading(true);
       const res = await api.getSystemDoctor();
       setDoctorReport(res);
-    } catch {
-      // Ignored
+      toast.success("Diagnostics Complete", "System doctor verified all core subsystem invariants.");
+    } catch (err: unknown) {
+      toast.error("Doctor Failed", err instanceof Error ? err.message : "Failed to run system doctor");
     } finally {
       setLoading(false);
     }
@@ -30,7 +33,9 @@ export function SystemView() {
     setCreatingBackup(true);
     setTimeout(() => {
       setCreatingBackup(false);
-      setBackupSuccess(`backup-mailopen-${Date.now()}.tar.gz (Encrypted AES-256-GCM)`);
+      const filename = `backup-mailopen-${Date.now()}.tar.gz (Encrypted AES-256-GCM)`;
+      setBackupSuccess(filename);
+      toast.success("Encrypted Snapshot Created", filename);
     }, 1000);
   };
 

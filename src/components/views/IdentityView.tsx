@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { api, SyncReport } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 import { RefreshCw, Play } from "lucide-react";
 
 export function IdentityView() {
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [ldapStatus, setLdapStatus] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +24,11 @@ export function IdentityView() {
       setError(null);
       const res = await api.getLDAPStatus();
       setLdapStatus(res);
+      toast.info("LDAP Status Checked", "Directory provider status refreshed.");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to query LDAP provider");
+      const msg = err instanceof Error ? err.message : "Failed to query LDAP provider";
+      setError(msg);
+      toast.error("LDAP Query Error", msg);
     } finally {
       setLoading(false);
     }
@@ -43,8 +48,14 @@ export function IdentityView() {
         dry_run: dryRun,
       });
       setSyncReport(report);
+      toast.success(
+        dryRun ? "Directory Sync Preview Complete" : "Directory Sync Executed",
+        `Scanned ${report.total_identities || 0} identities, ${report.created || 0} created, ${report.updated || 0} updated.`
+      );
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Directory synchronization failed");
+      const msg = err instanceof Error ? err.message : "Directory synchronization failed";
+      setError(msg);
+      toast.error("Directory Sync Failed", msg);
     } finally {
       setSyncing(false);
     }
@@ -148,7 +159,7 @@ export function IdentityView() {
           </div>
 
           <div className="flex items-center gap-2 pt-6 text-xs">
-            <label className="flex items-center gap-2 text-zinc-700 cursor-pointer">
+            <label className="flex items-center gap-2 text-zinc-700 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={autoProvision}
@@ -160,7 +171,7 @@ export function IdentityView() {
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-6">
-            <label className="flex items-center gap-2 text-xs text-zinc-700 cursor-pointer">
+            <label className="flex items-center gap-2 text-xs text-zinc-700 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={dryRun}
@@ -173,7 +184,7 @@ export function IdentityView() {
             <button
               onClick={handleRunSync}
               disabled={syncing}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg disabled:opacity-50 cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg disabled:opacity-50 cursor-pointer shadow-xs transition-all"
             >
               <Play className="w-3 h-3 fill-current" />
               <span>{syncing ? "Syncing..." : dryRun ? "Run Preview" : "Execute Sync"}</span>

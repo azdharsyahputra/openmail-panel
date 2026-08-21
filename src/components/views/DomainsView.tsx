@@ -2,9 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { api, DomainItem, DomainDNSResponse, DKIMKeyItem } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { RefreshCw, Plus, Copy, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function DomainsView() {
+  const toast = useToast();
   const [domains, setDomains] = useState<DomainItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +20,10 @@ export function DomainsView() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDomainName, setNewDomainName] = useState("");
   const [creating, setCreating] = useState(false);
+
+  // Confirm Delete Modal State
+  const [domainToDelete, setDomainToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Details Modal
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
@@ -35,7 +42,9 @@ export function DomainsView() {
       const list = await api.getDomains();
       setDomains(list);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to load domains");
+      const msg = err instanceof Error ? err.message : "Failed to load domains";
+      setError(msg);
+      toast.error("Error Loading Domains", msg);
     } finally {
       setLoading(false);
     }
@@ -51,28 +60,32 @@ export function DomainsView() {
     try {
       setCreating(true);
       await api.createDomain(newDomainName.trim());
+      toast.success("Domain Registered", `Virtual domain ${newDomainName.trim()} created successfully.`);
       setNewDomainName("");
       setShowAddModal(false);
       await loadDomains();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to create domain");
+      toast.error("Failed to Create Domain", err instanceof Error ? err.message : "Domain registration failed");
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDelete = async (domainName: string) => {
-    if (!confirm(`Delete domain ${domainName}? This will purge all associated mailboxes.`)) {
-      return;
-    }
+  const confirmDeleteDomain = async () => {
+    if (!domainToDelete) return;
     try {
-      await api.deleteDomain(domainName);
+      setDeleting(true);
+      await api.deleteDomain(domainToDelete);
+      toast.success("Domain Deleted", `Virtual domain ${domainToDelete} was removed.`);
+      setDomainToDelete(null);
       await loadDomains();
-      if (selectedDomain === domainName) {
+      if (selectedDomain === domainToDelete) {
         setSelectedDomain(null);
       }
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to delete domain");
+      toast.error("Failed to Delete Domain", err instanceof Error ? err.message : "Deletion failed");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -102,18 +115,32 @@ export function DomainsView() {
     try {
       setGeneratingDKIM(true);
       await api.generateDomainDKIM(selectedDomain, newSelector.trim());
+      toast.success("DKIM Key Generated", `Selector '${newSelector.trim()}' 2048-bit RSA key ready.`);
       const keys = await api.getDomainDKIM(selectedDomain);
       setDkimKeys(keys);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to generate DKIM key");
+      toast.error("Failed to Generate DKIM Key", err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGeneratingDKIM(false);
+    }
+  };
+
+  const handleActivateDKIM = async (selector: string) => {
+    if (!selectedDomain) return;
+    try {
+      await api.activateDomainDKIM(selectedDomain, selector);
+      toast.success("DKIM Key Activated", `Selector '${selector}' is now signing outbound mail.`);
+      const keys = await api.getDomainDKIM(selectedDomain);
+      setDkimKeys(keys);
+    } catch (err: unknown) {
+      toast.error("Failed to Activate DKIM Key", err instanceof Error ? err.message : "Activation failed");
     }
   };
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(id);
+    toast.info("Copied to Clipboard", text);
     setTimeout(() => setCopiedKey(null), 1500);
   };
 
@@ -215,7 +242,7 @@ export function DomainsView() {
                           Doctor
                         </button>
                         <button
-                          onClick={() => handleDelete(dom.name)}
+                          onClick={() => setDomainToDelete(dom.name)}
                           className="px-2.5 py-1 rounded-md text-red-600 hover:bg-red-50 font-medium cursor-pointer transition-colors"
                         >
                           Delete
@@ -281,7 +308,7 @@ export function DomainsView() {
 
       {/* Add Domain Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
               <h3 className="font-semibold text-zinc-950 text-sm">Add Virtual Domain</h3>
@@ -326,7 +353,7 @@ export function DomainsView() {
 
       {/* Domain Details Modal */}
       {selectedDomain && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4 select-none">
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl max-h-[85vh] flex flex-col justify-between space-y-4">
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-zinc-100 mb-3">
@@ -448,9 +475,19 @@ export function DomainsView() {
                         <div key={k.id} className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl space-y-1.5">
                           <div className="flex justify-between items-center font-bold">
                             <span>Selector: {k.selector}</span>
-                            <span className="text-[10px] uppercase font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                              {k.status}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] uppercase font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                {k.status}
+                              </span>
+                              {k.status !== "active" && (
+                                <button
+                                  onClick={() => handleActivateDKIM(k.selector)}
+                                  className="text-[11px] text-blue-600 hover:underline font-sans cursor-pointer"
+                                >
+                                  Activate
+                                </button>
+                              )}
+                            </div>
                           </div>
                           {k.dns_record && (
                             <code className="block p-2 bg-white rounded-lg border border-zinc-200 text-[10px] break-all">
@@ -483,6 +520,18 @@ export function DomainsView() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal for Delete Domain */}
+      <ConfirmModal
+        isOpen={Boolean(domainToDelete)}
+        title="Delete Virtual Domain"
+        message={`Are you sure you want to permanently delete domain "${domainToDelete}"? This will purge all associated mailboxes, aliases, and DKIM cryptographic records.`}
+        confirmLabel="Delete Domain"
+        variant="danger"
+        loading={deleting}
+        onConfirm={confirmDeleteDomain}
+        onCancel={() => setDomainToDelete(null)}
+      />
     </div>
   );
 }
