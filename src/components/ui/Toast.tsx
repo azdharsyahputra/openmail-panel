@@ -88,14 +88,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   : isError
                   ? "border-red-500/20 text-zinc-900 shadow-red-500/5"
                   : isWarning
-                  ? "border-amber-500/20 text-zinc-900 shadow-amber-500/5"
+                  ? "border-red-500/20 text-zinc-900 shadow-red-500/5"
                   : "border-zinc-200 text-zinc-900 shadow-zinc-500/5"
               }`}
             >
               {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />}
               {isError && <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />}
-              {isWarning && <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />}
-              {!isSuccess && !isError && !isWarning && <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />}
+              {isWarning && <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />}
+              {!isSuccess && !isError && !isWarning && <Info className="w-5 h-5 text-zinc-700 shrink-0 mt-0.5" />}
 
               <div className="flex-1 min-w-0">
                 <h4 className="text-xs font-semibold text-zinc-950 tracking-tight leading-tight">{toast.title}</h4>

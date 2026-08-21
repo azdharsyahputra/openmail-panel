@@ -113,7 +113,7 @@ export function IdentityView() {
         <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Access Control</span>
-            <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 text-[10px] font-mono font-semibold">
+            <span className="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-mono font-semibold">
               3 ROLES ACTIVE
             </span>
           </div>
@@ -127,7 +127,7 @@ export function IdentityView() {
         <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Provisioning Engine</span>
-            <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 text-[10px] font-mono font-semibold">
+            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] font-mono font-semibold">
               AUTO-PROVISION
             </span>
           </div>
@@ -161,7 +161,7 @@ export function IdentityView() {
                 cn=mail-admins,ou=groups,dc=mailopen,dc=internal
               </td>
               <td className="py-3 px-4 text-center">
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-purple-500/10 text-purple-700 border border-purple-200">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-zinc-950 text-white border border-zinc-950">
                   ADMIN
                 </span>
               </td>
@@ -174,7 +174,7 @@ export function IdentityView() {
                 cn=mail-operators,ou=groups,dc=mailopen,dc=internal
               </td>
               <td className="py-3 px-4 text-center">
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-sky-500/10 text-sky-700 border border-sky-200">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-zinc-100 text-zinc-800 border border-zinc-200">
                   OPERATOR
                 </span>
               </td>
@@ -268,7 +268,7 @@ export function IdentityView() {
                 <span>Sync Execution Completed ({syncReport.duration ? `${syncReport.duration}ms` : "< 1s"})</span>
               </div>
               <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                dryRun ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                dryRun ? "bg-zinc-200 text-zinc-800" : "bg-emerald-100 text-emerald-800"
               }`}>
                 {dryRun ? "DRY RUN PREVIEW" : "COMMITTED TO DATABASE"}
               </span>
@@ -284,12 +284,12 @@ export function IdentityView() {
                 <div className="text-lg font-bold text-emerald-600 mt-0.5">+{syncReport.created}</div>
               </div>
               <div className="p-3 bg-white rounded-xl border border-zinc-200 shadow-2xs">
-                <div className="text-[10px] text-blue-600 uppercase">Updated</div>
-                <div className="text-lg font-bold text-blue-600 mt-0.5">{syncReport.updated}</div>
+                <div className="text-[10px] text-zinc-500 uppercase">Updated</div>
+                <div className="text-lg font-bold text-zinc-950 mt-0.5">{syncReport.updated}</div>
               </div>
               <div className="p-3 bg-white rounded-xl border border-zinc-200 shadow-2xs">
-                <div className="text-[10px] text-amber-600 uppercase">Suspended</div>
-                <div className="text-lg font-bold text-amber-600 mt-0.5">{syncReport.suspended}</div>
+                <div className="text-[10px] text-red-600 uppercase">Suspended</div>
+                <div className="text-lg font-bold text-red-600 mt-0.5">{syncReport.suspended}</div>
               </div>
               <div className="p-3 bg-white rounded-xl border border-zinc-200 shadow-2xs">
                 <div className="text-[10px] text-zinc-400 uppercase">Skipped</div>

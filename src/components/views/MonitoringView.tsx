@@ -225,7 +225,7 @@ export function MonitoringView() {
             <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-zinc-400 uppercase tracking-wider">SMTP Inbound</span>
-                <Mail className="w-3.5 h-3.5 text-blue-600" />
+                <Mail className="w-3.5 h-3.5 text-zinc-700" />
               </div>
               <div className="text-2xl font-bold text-zinc-950 mt-2">
                 {parsedMetrics.smtp_connections_total}
@@ -253,7 +253,7 @@ export function MonitoringView() {
             <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-zinc-400 uppercase tracking-wider">Threats Neutralized</span>
-                <Shield className="w-3.5 h-3.5 text-purple-600" />
+                <Shield className="w-3.5 h-3.5 text-red-600" />
               </div>
               <div className="text-2xl font-bold text-zinc-950 mt-2">
                 {parsedMetrics.spam_detected_total + parsedMetrics.malware_detected_total}
@@ -267,7 +267,7 @@ export function MonitoringView() {
             <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-zinc-400 uppercase tracking-wider">IMAP Sessions</span>
-                <Zap className="w-3.5 h-3.5 text-amber-600" />
+                <Zap className="w-3.5 h-3.5 text-zinc-700" />
               </div>
               <div className="text-2xl font-bold text-zinc-950 mt-2">
                 {parsedMetrics.imap_logins_total}
@@ -383,18 +383,18 @@ export function MonitoringView() {
               filteredLogs.map((log) => {
                 const actorNorm = (log.actor || "api").toLowerCase();
                 const actorClass = actorNorm.includes("admin")
-                  ? "bg-purple-500/10 text-purple-700 border-purple-200"
+                  ? "bg-zinc-950 text-white border-zinc-950"
                   : actorNorm.includes("api")
-                  ? "bg-sky-500/10 text-sky-700 border-sky-200"
+                  ? "bg-zinc-100 text-zinc-800 border-zinc-200"
                   : actorNorm.includes("system")
-                  ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
+                  ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
                   : "bg-zinc-100 text-zinc-700 border-zinc-200";
 
                 return (
                   <div key={log.id} className="p-3.5 hover:bg-zinc-50/50 transition-colors flex items-start justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-blue-600">{log.action}</span>
+                        <span className="font-bold text-zinc-950">{log.action}</span>
                         <span className={`px-1.5 py-0.2 rounded border text-[10px] font-bold uppercase ${actorClass}`}>
                           {log.actor}
                         </span>

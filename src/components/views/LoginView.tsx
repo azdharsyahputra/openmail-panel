@@ -109,7 +109,7 @@ export function LoginView() {
               <button
                 type="button"
                 onClick={handleFillDemo}
-                className="text-[11px] font-mono text-blue-600 hover:text-blue-800 cursor-pointer"
+                className="text-[11px] font-mono text-zinc-600 hover:text-zinc-950 cursor-pointer"
               >
                 Fill default
               </button>

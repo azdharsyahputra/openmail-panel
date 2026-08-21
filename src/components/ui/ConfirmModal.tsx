@@ -39,7 +39,7 @@ export function ConfirmModal({
               </div>
             )}
             {variant === "warning" && (
-              <div className="w-9 h-9 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
             )}
@@ -74,8 +74,6 @@ export function ConfirmModal({
             className={`px-4 py-1.5 text-xs font-medium text-white rounded-lg shadow-xs cursor-pointer disabled:opacity-50 transition-colors ${
               variant === "danger"
                 ? "bg-red-600 hover:bg-red-700"
-                : variant === "warning"
-                ? "bg-amber-600 hover:bg-amber-700"
                 : "bg-zinc-950 hover:bg-zinc-800"
             }`}
           >

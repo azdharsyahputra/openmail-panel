@@ -266,7 +266,7 @@ export function MailboxesView() {
         <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Storage Pool</span>
-            <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 text-[10px] font-mono font-semibold">
+            <span className="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-mono font-semibold">
               {formatBytes(totalQuota)} POOL
             </span>
           </div>
@@ -277,7 +277,7 @@ export function MailboxesView() {
         <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Protocols & Auth</span>
-            <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 text-[10px] font-mono font-semibold">
+            <span className="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-mono font-semibold">
               SASL / TLS
             </span>
           </div>
@@ -387,7 +387,7 @@ export function MailboxesView() {
                           </div>
                           <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${percent > 85 ? "bg-red-500" : percent > 60 ? "bg-amber-500" : "bg-zinc-950"}`}
+                              className={`h-full rounded-full ${percent > 85 ? "bg-red-500" : "bg-zinc-950"}`}
                               style={{ width: `${Math.max(percent, 2)}%` }}
                             />
                           </div>

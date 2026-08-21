@@ -158,7 +158,7 @@ export function QueueView() {
           </button>
           <button
             onClick={() => setShowFlushModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs transition-all cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             <span>Flush Queue</span>
@@ -183,12 +183,12 @@ export function QueueView() {
           <div className="text-xl font-bold text-emerald-600 mt-0.5">{summary?.active || 0}</div>
         </div>
         <div className="p-3 bg-white rounded-xl border border-zinc-200/80 shadow-2xs">
-          <div className="text-[10px] text-amber-600 uppercase tracking-wider">Deferred</div>
-          <div className="text-xl font-bold text-amber-600 mt-0.5">{summary?.deferred || 0}</div>
+          <div className="text-[10px] text-red-600 uppercase tracking-wider">Deferred</div>
+          <div className="text-xl font-bold text-red-600 mt-0.5">{summary?.deferred || 0}</div>
         </div>
         <div className="p-3 bg-white rounded-xl border border-zinc-200/80 shadow-2xs">
-          <div className="text-[10px] text-blue-600 uppercase tracking-wider">Hold</div>
-          <div className="text-xl font-bold text-blue-600 mt-0.5">{summary?.hold || 0}</div>
+          <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Hold</div>
+          <div className="text-xl font-bold text-zinc-800 mt-0.5">{summary?.hold || 0}</div>
         </div>
         <div className="p-3 bg-white rounded-xl border border-zinc-200/80 shadow-2xs">
           <div className="text-[10px] text-red-600 uppercase tracking-wider">Corrupt</div>

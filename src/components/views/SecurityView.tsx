@@ -124,11 +124,11 @@ export function SecurityView() {
                 paginatedLogs.map((log) => {
                   const actorNorm = (log.actor || "api").toLowerCase();
                   const actorClass = actorNorm.includes("admin")
-                    ? "bg-purple-500/10 text-purple-700 border-purple-200"
+                    ? "bg-zinc-950 text-white border-zinc-950"
                     : actorNorm.includes("api")
-                    ? "bg-sky-500/10 text-sky-700 border-sky-200"
+                    ? "bg-zinc-100 text-zinc-800 border-zinc-200"
                     : actorNorm.includes("system")
-                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
+                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
                     : "bg-zinc-100 text-zinc-700 border-zinc-200";
 
                   return (
@@ -141,7 +141,7 @@ export function SecurityView() {
                           {log.actor || "api"}
                         </span>
                       </td>
-                      <td className="py-2.5 px-4 font-semibold text-blue-600 text-center">{log.action}</td>
+                      <td className="py-2.5 px-4 font-semibold text-zinc-950 text-center">{log.action}</td>
                       <td className="py-2.5 px-4 text-zinc-800 font-medium truncate max-w-48 text-left">
                         {log.resource || "system"}
                       </td>

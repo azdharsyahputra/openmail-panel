@@ -237,7 +237,7 @@ export function DomainsView() {
         <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">DKIM Cryptography</span>
-            <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 text-[10px] font-mono font-semibold">
+            <span className="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-mono font-semibold">
               RSA-2048
             </span>
           </div>
@@ -248,7 +248,7 @@ export function DomainsView() {
         <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">DNS & Transport</span>
-            <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 text-[10px] font-mono font-semibold">
+            <span className="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-mono font-semibold">
               READY
             </span>
           </div>
