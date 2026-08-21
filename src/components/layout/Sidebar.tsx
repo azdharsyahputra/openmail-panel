@@ -37,7 +37,7 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
       items: [
         { id: "dashboard", label: "Overview", icon: LayoutDashboard },
         { id: "domains", label: "Domains & DNS", icon: Globe },
-        { id: "mailboxes", label: "Mailboxes", icon: Inbox },
+        { id: "mailboxes", label: "Mailboxes & Aliases", icon: Inbox },
       ],
     },
     {
@@ -51,8 +51,8 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
     {
       title: "Operations",
       items: [
-        { id: "monitoring", label: "Monitoring", icon: Activity },
-        { id: "system", label: "System Health", icon: Server },
+        { id: "monitoring", label: "Telemetry & Logs", icon: Activity },
+        { id: "system", label: "System Diagnostics", icon: Server },
       ],
     },
   ];
@@ -62,7 +62,7 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
       <div className="space-y-4">
         {navSections.map((section, sIdx) => (
           <div key={sIdx} className="space-y-0.5">
-            <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+            <div className="px-3 py-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider font-mono">
               {section.title}
             </div>
             {section.items.map((item) => {
@@ -72,13 +72,13 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                     isActive
-                      ? "bg-zinc-900 text-white font-medium shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-normal"
+                      ? "bg-zinc-950 text-white shadow-xs"
+                      : "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/80"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-slate-400"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-zinc-400"}`} />
                   <span>{item.label}</span>
                 </button>
               );
@@ -87,14 +87,14 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
         ))}
       </div>
 
-      <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs text-[11px] font-mono text-slate-500 space-y-1">
+      <div className="p-3 bg-white rounded-xl border border-zinc-200/80 shadow-2xs text-[11px] font-mono text-zinc-500 space-y-1">
         <div className="flex justify-between">
-          <span>Release</span>
-          <span className="font-semibold text-slate-800">v0.9.0-GA</span>
+          <span>Engine</span>
+          <span className="font-semibold text-zinc-800">v0.9.0-GA</span>
         </div>
         <div className="flex justify-between">
           <span>Control Plane</span>
-          <span className="text-blue-600 font-semibold">W3.3 Active</span>
+          <span className="text-zinc-950 font-semibold">W3.3 Active</span>
         </div>
       </div>
     </aside>

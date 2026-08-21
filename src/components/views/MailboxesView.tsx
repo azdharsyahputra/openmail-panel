@@ -157,23 +157,23 @@ export function MailboxesView() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
         <div>
-          <h1 className="text-lg font-bold text-slate-900 tracking-tight">Mailbox Accounts</h1>
-          <p className="text-xs text-slate-500 mt-0.5">User mailboxes, storage quotas, and forwarding aliases</p>
+          <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">Mailbox Accounts</h1>
+          <p className="text-xs text-zinc-500 mt-0.5">User mailboxes, storage quotas, and forwarding aliases</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={loadData}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-slate-50 border border-slate-200/80 rounded-lg text-slate-700 shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-700 shadow-2xs transition-all cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-slate-400" : "text-slate-500"}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-zinc-400" : "text-zinc-500"}`} />
             <span>Refresh</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Mailbox</span>
@@ -188,21 +188,21 @@ export function MailboxesView() {
       )}
 
       {/* Table Container */}
-      <div className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-2xs">
+      <div className="rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50/70 border-b border-slate-200 font-mono text-slate-500 uppercase text-[10px]">
+          <thead className="bg-zinc-50/70 border-b border-zinc-200 font-mono text-zinc-500 uppercase text-[10px]">
             <tr>
               <th className="py-3 px-4">Account Email</th>
               <th className="py-3 px-4">Storage Usage</th>
               <th className="py-3 px-4">Provider</th>
               <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+              <th className="py-3 px-4 text-right font-sans">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-zinc-100">
             {mailboxes.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-10 text-center text-slate-400 text-xs">
+                <td colSpan={5} className="py-10 text-center text-zinc-400 text-xs font-sans">
                   No mailboxes found. Click &quot;New Mailbox&quot; to provision an account.
                 </td>
               </tr>
@@ -211,35 +211,35 @@ export function MailboxesView() {
                 const storage = formatStorage(mb.used_bytes || 0, mb.quota_bytes || 0);
                 const isSuspended = mb.status === "suspended";
                 return (
-                  <tr key={mb.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-2.5 px-4 font-semibold text-slate-900 font-mono text-xs">
+                  <tr key={mb.id} className="hover:bg-zinc-50/50 transition-colors">
+                    <td className="py-2.5 px-4 font-medium text-zinc-950 font-mono text-xs">
                       {mb.email}
                     </td>
                     <td className="py-2.5 px-4 min-w-44 font-mono text-[11px]">
-                      <div className="flex justify-between text-slate-500 mb-1">
+                      <div className="flex justify-between text-zinc-500 mb-1">
                         <span>{storage.usedMB} MB</span>
                         <span>{storage.quotaMB} MB ({storage.percent}%)</span>
                       </div>
-                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                      <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all ${
-                            storage.percent > 90 ? "bg-red-500" : storage.percent > 75 ? "bg-amber-500" : "bg-blue-600"
+                            storage.percent > 90 ? "bg-red-500" : storage.percent > 75 ? "bg-amber-500" : "bg-zinc-900"
                           }`}
                           style={{ width: `${storage.percent}%` }}
                         />
                       </div>
                     </td>
                     <td className="py-2.5 px-4 font-mono text-[11px]">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                      <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200">
                         {mb.identity_provider === "ldap" ? "LDAP" : "LOCAL"}
                       </span>
                     </td>
                     <td className="py-2.5 px-4">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-medium ${
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-medium ${
                           isSuspended
-                            ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                            : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                            ? "bg-amber-500/10 text-amber-700 border border-amber-500/20"
+                            : "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
                         }`}
                       >
                         {mb.status}
@@ -249,19 +249,19 @@ export function MailboxesView() {
                       <div className="flex items-center justify-end gap-1 text-xs">
                         <button
                           onClick={() => openAliasDrawer(mb.email)}
-                          className="px-2.5 py-1 rounded-md text-slate-700 hover:bg-slate-100 font-medium cursor-pointer transition-colors"
+                          className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
                         >
                           Aliases
                         </button>
                         <button
                           onClick={() => setPwResetMailbox(mb.email)}
-                          className="px-2.5 py-1 rounded-md text-slate-700 hover:bg-slate-100 font-medium cursor-pointer transition-colors"
+                          className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
                         >
                           Password
                         </button>
                         <button
                           onClick={() => handleToggleStatus(mb)}
-                          className="px-2.5 py-1 rounded-md text-slate-700 hover:bg-slate-100 font-medium cursor-pointer transition-colors"
+                          className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
                         >
                           {isSuspended ? "Resume" : "Suspend"}
                         </button>
@@ -283,17 +283,17 @@ export function MailboxesView() {
 
       {/* Add Mailbox Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-sm w-full p-6 shadow-xl space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-sm">Create Virtual Mailbox</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
+              <h3 className="font-semibold text-zinc-950 text-sm">Create Virtual Mailbox</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   Email Address
                 </label>
                 <input
@@ -301,13 +301,13 @@ export function MailboxesView() {
                   placeholder="user@example.com"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-zinc-900 focus:bg-white font-mono"
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   Password
                 </label>
                 <input
@@ -315,12 +315,12 @@ export function MailboxesView() {
                   placeholder="••••••••••••"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-zinc-900 focus:bg-white font-mono"
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   Storage Quota (MB)
                 </label>
                 <input
@@ -329,7 +329,7 @@ export function MailboxesView() {
                   step={100}
                   value={newQuotaMB}
                   onChange={(e) => setNewQuotaMB(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none font-mono"
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none font-mono text-zinc-950"
                 />
               </div>
 
@@ -337,14 +337,14 @@ export function MailboxesView() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3.5 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs border border-zinc-200 rounded-lg text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating || !newEmail || !newPassword}
-                  className="px-4 py-1.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {creating ? "Creating..." : "Create Mailbox"}
                 </button>
@@ -356,20 +356,20 @@ export function MailboxesView() {
 
       {/* Reset Password Modal */}
       {pwResetMailbox && (
-        <div className="fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-sm w-full p-6 shadow-xl space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-zinc-200 max-w-sm w-full p-6 shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
               <div>
-                <h3 className="font-bold text-slate-900 text-sm">Reset Password</h3>
-                <p className="text-xs text-slate-500 font-mono mt-0.5">{pwResetMailbox}</p>
+                <h3 className="font-semibold text-zinc-950 text-sm">Reset Password</h3>
+                <p className="text-xs text-zinc-500 font-mono mt-0.5">{pwResetMailbox}</p>
               </div>
-              <button onClick={() => setPwResetMailbox(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setPwResetMailbox(null)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleResetPassword} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   New Password
                 </label>
                 <input
@@ -377,7 +377,7 @@ export function MailboxesView() {
                   placeholder="••••••••••••"
                   value={resetPasswordVal}
                   onChange={(e) => setResetPasswordVal(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-zinc-900 focus:bg-white font-mono"
+                  className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-zinc-950 focus:bg-white font-mono text-zinc-950"
                   autoFocus
                 />
               </div>
@@ -385,14 +385,14 @@ export function MailboxesView() {
                 <button
                   type="button"
                   onClick={() => setPwResetMailbox(null)}
-                  className="px-3.5 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs border border-zinc-200 rounded-lg text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resettingPw || !resetPasswordVal}
-                  className="px-4 py-1.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {resettingPw ? "Saving..." : "Save Password"}
                 </button>
@@ -404,14 +404,14 @@ export function MailboxesView() {
 
       {/* Aliases Drawer */}
       {aliasMailbox && (
-        <div className="fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 bg-zinc-950/20 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
               <div>
-                <h3 className="font-bold text-slate-900 text-sm">Forwarding Aliases</h3>
-                <p className="text-xs text-slate-500 font-mono mt-0.5">{aliasMailbox}</p>
+                <h3 className="font-semibold text-zinc-950 text-sm">Forwarding Aliases</h3>
+                <p className="text-xs text-zinc-500 font-mono mt-0.5">{aliasMailbox}</p>
               </div>
-              <button onClick={() => setAliasMailbox(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setAliasMailbox(null)} className="text-zinc-400 hover:text-zinc-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -422,20 +422,20 @@ export function MailboxesView() {
                 placeholder="alias@domain.com"
                 value={newAlias}
                 onChange={(e) => setNewAlias(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:bg-white font-mono"
+                className="flex-1 px-3 py-1.5 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white font-mono text-zinc-950"
               />
               <button
                 type="submit"
                 disabled={addingAlias || !newAlias}
-                className="px-3.5 py-1.5 text-xs bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg font-medium disabled:opacity-50 cursor-pointer shadow-xs"
+                className="px-3.5 py-1.5 text-xs bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg font-medium disabled:opacity-50 cursor-pointer shadow-xs"
               >
                 Add
               </button>
             </form>
 
-            <div className="space-y-1.5 max-h-48 overflow-y-auto font-mono text-xs divide-y divide-slate-100">
+            <div className="space-y-1.5 max-h-48 overflow-y-auto font-mono text-xs divide-y divide-zinc-100">
               {aliases.length === 0 ? (
-                <div className="py-6 text-center text-slate-400 font-sans text-xs">No aliases configured.</div>
+                <div className="py-6 text-center text-zinc-400 font-sans text-xs">No aliases configured.</div>
               ) : (
                 aliases.map((al) => (
                   <div key={al.id} className="py-2 flex justify-between items-center">
@@ -451,10 +451,10 @@ export function MailboxesView() {
               )}
             </div>
 
-            <div className="pt-3 border-t border-slate-100 flex justify-end">
+            <div className="pt-3 border-t border-zinc-100 flex justify-end">
               <button
                 onClick={() => setAliasMailbox(null)}
-                className="px-3.5 py-1.5 text-xs border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer text-slate-700"
+                className="px-3.5 py-1.5 text-xs border border-zinc-200 rounded-lg hover:bg-zinc-50 cursor-pointer text-zinc-700"
               >
                 Done
               </button>

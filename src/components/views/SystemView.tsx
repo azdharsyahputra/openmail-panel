@@ -37,24 +37,24 @@ export function SystemView() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
         <div>
-          <h1 className="text-lg font-bold text-slate-900 tracking-tight">System Health & Doctor</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Comprehensive engine diagnostics, schema status, and disaster recovery</p>
+          <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">System Health & Diagnostics</h1>
+          <p className="text-xs text-zinc-500 mt-0.5">Comprehensive engine diagnostics, schema status, and disaster recovery</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={loadDoctor}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-slate-50 border border-slate-200/80 rounded-lg text-slate-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-slate-400" : "text-slate-500"}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-zinc-400" : "text-zinc-500"}`} />
             <span>{loading ? "Diagnosing..." : "Run Doctor"}</span>
           </button>
           <button
             onClick={handleCreateBackup}
             disabled={creatingBackup}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg shadow-xs transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white rounded-lg shadow-xs transition-all cursor-pointer disabled:opacity-50"
           >
             <HardDrive className="w-3.5 h-3.5" />
             <span>{creatingBackup ? "Creating..." : "Create Backup"}</span>
@@ -70,14 +70,14 @@ export function SystemView() {
       )}
 
       {/* Engine Status Banner */}
-      <div className="p-5 bg-white border border-slate-200/80 rounded-xl flex justify-between items-center text-xs font-mono shadow-2xs">
+      <div className="p-5 bg-white border border-zinc-200/80 rounded-xl flex justify-between items-center text-xs font-mono shadow-2xs">
         <div>
-          <span className="font-bold text-slate-900 text-sm">MailOpen Engine Cluster</span>
-          <span className="text-slate-500 block text-[11px] mt-0.5">
+          <span className="font-bold text-zinc-950 text-sm">MailOpen Engine Cluster</span>
+          <span className="text-zinc-500 block text-[11px] mt-0.5">
             Core: v0.9.0-GA · Architecture: amd64/arm64 · Schema: v003_applied
           </span>
         </div>
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
           HEALTHY
         </span>
       </div>
@@ -140,12 +140,12 @@ export function SystemView() {
             ],
           },
         ].map((cat, idx) => (
-          <div key={idx} className="p-4 bg-white rounded-xl border border-slate-200/80 space-y-2 shadow-2xs">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100 font-bold text-xs text-slate-800 font-mono">
+          <div key={idx} className="p-4 bg-white rounded-xl border border-zinc-200/80 space-y-2 shadow-2xs">
+            <div className="flex justify-between items-center pb-2 border-b border-zinc-100 font-bold text-xs text-zinc-800 font-mono">
               <span>{cat.title}</span>
               <span className="text-emerald-600 font-normal">●</span>
             </div>
-            <ul className="space-y-1.5 font-mono text-[11px] text-slate-600">
+            <ul className="space-y-1.5 font-mono text-[11px] text-zinc-600">
               {cat.checks.map((chk, cIdx) => (
                 <li key={cIdx} className="flex items-start gap-1.5">
                   <span className="text-emerald-500 font-bold">✓</span>

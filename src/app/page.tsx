@@ -20,10 +20,10 @@ export default function MainPage() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen bg-[#f6f8fc] flex items-center justify-center overflow-hidden">
+      <div className="h-screen w-screen bg-[#f8fafc] flex items-center justify-center overflow-hidden">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-          <span className="text-xs font-medium text-slate-500 font-mono">
+          <div className="w-7 h-7 border-2 border-zinc-300 border-t-zinc-950 rounded-full animate-spin" />
+          <span className="text-xs font-medium text-zinc-500 font-mono">
             Loading MailOpen Control Plane...
           </span>
         </div>
@@ -36,11 +36,11 @@ export default function MainPage() {
   }
 
   return (
-    <div className="h-screen w-screen bg-[#f6f8fc] flex flex-col overflow-hidden select-none">
+    <div className="h-screen w-screen bg-[#f8fafc] flex flex-col overflow-hidden select-none">
       <Navbar />
-      <div className="flex-1 flex overflow-hidden px-4 pb-4 gap-4 h-[calc(100vh-4rem)]">
+      <div className="flex-1 flex overflow-hidden px-5 py-4 gap-5 h-[calc(100vh-3.5rem)]">
         <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} />
-        <main className="flex-1 h-full bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6 md:p-8 overflow-y-auto select-text">
+        <main className="flex-1 h-full bg-white rounded-xl border border-zinc-200/80 shadow-2xs p-6 md:p-8 overflow-y-auto select-text">
           {activeTab === "dashboard" && <DashboardView onNavigate={setActiveTab} />}
           {activeTab === "domains" && <DomainsView />}
           {activeTab === "mailboxes" && <MailboxesView />}
