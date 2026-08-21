@@ -34,13 +34,15 @@ export function SystemView() {
     }, 1000);
   };
 
+  const categories = doctorReport?.categories ? Object.values(doctorReport.categories) : [];
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
         <div>
           <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">System Health & Diagnostics</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Comprehensive engine diagnostics, schema status, and disaster recovery</p>
+          <p className="text-xs text-zinc-500 mt-0.5">Live backend doctor validation, schema status, and disaster recovery</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -77,84 +79,44 @@ export function SystemView() {
             Core: v0.9.0-GA · Architecture: amd64/arm64 · Schema: v003_applied
           </span>
         </div>
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-          HEALTHY
+        <span
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+            doctorReport?.healthy !== false
+              ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
+              : "bg-red-500/10 text-red-700 border border-red-500/20"
+          }`}
+        >
+          {doctorReport?.healthy !== false ? "ALL SYSTEMS HEALTHY" : "DEGRADED"}
         </span>
       </div>
 
-      {/* Categories Grid */}
+      {/* Dynamic Categories Grid from Live API */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          {
-            title: "Postfix Transport (MTA)",
-            checks: [
-              "Port 25 (Inbound Server-to-Server): READY",
-              "Port 587 (Submission SASL): READY",
-              "Anti-Relay Restrictions: ENFORCED",
-              "Anti-SMTP Smuggling: ACTIVE",
-            ],
-          },
-          {
-            title: "Dovecot Storage (IMAP/LMTP)",
-            checks: [
-              "Port 143/993 IMAP Daemon: READY",
-              "Maildir 0750 Permissions: SATISFIED",
-              "Vmail UID/GID Confinement: VERIFIED",
-              "LMTP Socket Delivery: ACTIVE",
-            ],
-          },
-          {
-            title: "OpenLDAP & Identity Service",
-            checks: [
-              "LDAPS / StartTLS Connection: READY",
-              "AST Filter Injection Immunity: VERIFIED",
-              "Subtree Base DN Containment: ENFORCED",
-              "Fail-Closed Mode: ACTIVE",
-            ],
-          },
-          {
-            title: "OpenDKIM & Milter",
-            checks: [
-              "Private Keys 0600 Isolation: VERIFIED",
-              "Milter UNIX Socket: CONFINED",
-              "Outbound Signing Failure: TEMPFAIL",
-              "Issue #324 DoS Protection: ACTIVE",
-            ],
-          },
-          {
-            title: "PostgreSQL Database",
-            checks: [
-              "Migrations Schema: UP-TO-DATE",
-              "Connection Pool (50 max): NOMINAL",
-              "Least Privilege DML Role: ENFORCED",
-              "Virtual Map Proxymap Queries: READY",
-            ],
-          },
-          {
-            title: "Disaster Recovery & Secrets",
-            checks: [
-              "AES-256 Backup Driver: READY",
-              "Zero Secrets in Process/Logs: VERIFIED",
-              "Atomic Maildir Restore: VERIFIED",
-              "Drift Protection: NOMINAL",
-            ],
-          },
-        ].map((cat, idx) => (
-          <div key={idx} className="p-4 bg-white rounded-xl border border-zinc-200/80 space-y-2 shadow-2xs">
-            <div className="flex justify-between items-center pb-2 border-b border-zinc-100 font-bold text-xs text-zinc-800 font-mono">
-              <span>{cat.title}</span>
-              <span className="text-emerald-600 font-normal">●</span>
-            </div>
-            <ul className="space-y-1.5 font-mono text-[11px] text-zinc-600">
-              {cat.checks.map((chk, cIdx) => (
-                <li key={cIdx} className="flex items-start gap-1.5">
-                  <span className="text-emerald-500 font-bold">✓</span>
-                  <span>{chk}</span>
-                </li>
-              ))}
-            </ul>
+        {categories.length === 0 ? (
+          <div className="col-span-3 py-12 text-center text-zinc-400 text-xs font-mono">
+            {loading ? "Running system diagnostics..." : "No diagnostic reports returned"}
           </div>
-        ))}
+        ) : (
+          categories.map((cat, idx) => (
+            <div key={idx} className="p-4 bg-white rounded-xl border border-zinc-200/80 space-y-2 shadow-2xs">
+              <div className="flex justify-between items-center pb-2 border-b border-zinc-100 font-bold text-xs text-zinc-800 font-mono">
+                <span>{cat.status || (cat as unknown as { name: string }).name || "SUBSYSTEM"}</span>
+                <span className={cat.status === "failed" ? "text-red-500 font-normal" : "text-emerald-600 font-normal"}>
+                  ●
+                </span>
+              </div>
+              <ul className="space-y-1.5 font-mono text-[11px] text-zinc-600">
+                {cat.checks &&
+                  Object.entries(cat.checks).map(([chkKey, chkVal], cIdx) => (
+                    <li key={cIdx} className="flex items-start justify-between gap-2">
+                      <span className="font-medium text-zinc-700">{chkKey}:</span>
+                      <span className="text-zinc-500 text-right truncate">{chkVal}</span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
