@@ -12,12 +12,14 @@ export function SystemView() {
   const [creatingBackup, setCreatingBackup] = useState(false);
   const [backupSuccess, setBackupSuccess] = useState<string | null>(null);
 
-  const loadDoctor = async () => {
+  const loadDoctor = async (notify = false) => {
     try {
       setLoading(true);
       const res = await api.getSystemDoctor();
       setDoctorReport(res);
-      toast.success("Diagnostics Complete", "System doctor verified all core subsystem invariants.");
+      if (notify) {
+        toast.success("Diagnostics Complete", "System doctor verified all core subsystem invariants.");
+      }
     } catch (err: unknown) {
       toast.error("Doctor Failed", err instanceof Error ? err.message : "Failed to run system doctor");
     } finally {
@@ -26,7 +28,7 @@ export function SystemView() {
   };
 
   useEffect(() => {
-    loadDoctor();
+    loadDoctor(false);
   }, []);
 
   const handleCreateBackup = () => {
@@ -51,7 +53,7 @@ export function SystemView() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={loadDoctor}
+            onClick={() => loadDoctor(true)}
             disabled={loading}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
           >

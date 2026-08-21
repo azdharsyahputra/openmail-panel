@@ -14,12 +14,14 @@ export function SecurityView() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const loadData = async () => {
+  const loadData = async (notify = false) => {
     try {
       setLoading(true);
       const logs = await api.getAuditLogs();
       setAuditLogs(logs);
-      toast.info("Audit Stream Refreshed", `Loaded ${logs.length} immutable security records.`);
+      if (notify) {
+        toast.info("Audit Stream Refreshed", `Loaded ${logs.length} immutable security records.`);
+      }
     } catch (err: unknown) {
       toast.error("Failed to Load Audit Logs", err instanceof Error ? err.message : "Query failed");
     } finally {
@@ -28,7 +30,7 @@ export function SecurityView() {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, []);
 
   // Pagination Calculations
@@ -46,7 +48,7 @@ export function SecurityView() {
           <p className="text-xs text-zinc-500 mt-0.5">Immutable audit trails and security baseline invariants</p>
         </div>
         <button
-          onClick={loadData}
+          onClick={() => loadData(true)}
           disabled={loading}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
         >

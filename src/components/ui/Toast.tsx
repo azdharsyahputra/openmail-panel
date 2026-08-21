@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useRef } from "react";
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -27,6 +27,7 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const lastToastRef = useRef<{ key: string; time: number }>({ key: "", time: 0 });
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -34,9 +35,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const addToast = useCallback(
     (type: ToastType, title: string, message?: string, duration = 4000) => {
+      const now = Date.now();
+      const toastKey = `${type}:${title}:${message || ""}`;
+
+      // Deduplicate identical toasts triggered within 2000ms
+      if (lastToastRef.current.key === toastKey && now - lastToastRef.current.time < 2000) {
+        return;
+      }
+      lastToastRef.current = { key: toastKey, time: now };
+
       const id = Math.random().toString(36).substring(2, 9);
       const newToast: Toast = { id, type, title, message, duration };
-      setToasts((prev) => [...prev, newToast]);
+
+      setToasts((prev) => {
+        // Double check against existing toasts in state
+        if (prev.some((t) => t.type === type && t.title === title && t.message === message)) {
+          return prev;
+        }
+        return [...prev, newToast];
+      });
 
       if (duration > 0) {
         setTimeout(() => {

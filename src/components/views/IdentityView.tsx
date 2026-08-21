@@ -18,13 +18,15 @@ export function IdentityView() {
   const [syncing, setSyncing] = useState(false);
   const [syncReport, setSyncReport] = useState<SyncReport | null>(null);
 
-  const checkLdap = async () => {
+  const checkLdap = async (notify = false) => {
     try {
       setLoading(true);
       setError(null);
       const res = await api.getLDAPStatus();
       setLdapStatus(res);
-      toast.info("LDAP Status Checked", "Directory provider status refreshed.");
+      if (notify) {
+        toast.info("LDAP Status Checked", "Directory provider status refreshed.");
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to query LDAP provider";
       setError(msg);
@@ -35,7 +37,7 @@ export function IdentityView() {
   };
 
   useEffect(() => {
-    checkLdap();
+    checkLdap(false);
   }, []);
 
   const handleRunSync = async () => {
@@ -70,7 +72,7 @@ export function IdentityView() {
           <p className="text-xs text-zinc-500 mt-0.5">Centralized OpenLDAP / Active Directory synchronization & RBAC</p>
         </div>
         <button
-          onClick={checkLdap}
+          onClick={() => checkLdap(true)}
           disabled={loading}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 rounded-lg text-zinc-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
         >
