@@ -508,6 +508,17 @@ export function DomainsView() {
 
                       const list: ExpandedRecord[] = [];
 
+                      if (dnsData.a) {
+                        const h = normalizeHost(dnsData.a.host || "mail");
+                        list.push({
+                          type: "A",
+                          host: h,
+                          value: dnsData.a.value,
+                          description: `Points mail.${selectedDomain} directly to your MailOpen server IP address.`,
+                          note: `Enter '${h}' in Cloudflare/Registrar (Must be 'DNS Only' / unproxied).`,
+                        });
+                      }
+
                       if (dnsData.mx) {
                         const h = normalizeHost(dnsData.mx.host || "@");
                         list.push({
