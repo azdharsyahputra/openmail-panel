@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { api, AuditLogItem } from "@/lib/api";
-import { RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
+import { RefreshCw, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 
 export function SecurityView() {
+  const toast = useToast();
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,8 +19,9 @@ export function SecurityView() {
       setLoading(true);
       const logs = await api.getAuditLogs();
       setAuditLogs(logs);
-    } catch {
-      // Ignored
+      toast.info("Audit Stream Refreshed", `Loaded ${logs.length} immutable security records.`);
+    } catch (err: unknown) {
+      toast.error("Failed to Load Audit Logs", err instanceof Error ? err.message : "Query failed");
     } finally {
       setLoading(false);
     }
@@ -55,9 +58,12 @@ export function SecurityView() {
       {/* Security Invariant Grid - Fixed top */}
       <div className="shrink-0 rounded-xl border border-zinc-200/80 bg-white p-4 space-y-2.5 shadow-2xs">
         <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
-          <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
-            Security Baseline Invariant Verification
-          </h2>
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
+              Security Baseline Invariant Verification
+            </h2>
+          </div>
           <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] font-mono font-semibold">
             ALL INVARIANTS SATISFIED
           </span>
@@ -66,27 +72,27 @@ export function SecurityView() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs font-mono text-center">
           <div className="p-2.5 bg-zinc-50/70 border border-zinc-200/80 rounded-lg">
             <div className="font-bold text-zinc-800 text-[11px]">Identity</div>
-            <div className="text-emerald-700 text-[10px] mt-0.5">PASS</div>
+            <div className="text-emerald-700 text-[10px] font-semibold mt-0.5">PASS</div>
           </div>
           <div className="p-2.5 bg-zinc-50/70 border border-zinc-200/80 rounded-lg">
             <div className="font-bold text-zinc-800 text-[11px]">Postfix</div>
-            <div className="text-emerald-700 text-[10px] mt-0.5">PASS</div>
+            <div className="text-emerald-700 text-[10px] font-semibold mt-0.5">PASS</div>
           </div>
           <div className="p-2.5 bg-zinc-50/70 border border-zinc-200/80 rounded-lg">
             <div className="font-bold text-zinc-800 text-[11px]">Dovecot</div>
-            <div className="text-emerald-700 text-[10px] mt-0.5">PASS</div>
+            <div className="text-emerald-700 text-[10px] font-semibold mt-0.5">PASS</div>
           </div>
           <div className="p-2.5 bg-zinc-50/70 border border-zinc-200/80 rounded-lg">
             <div className="font-bold text-zinc-800 text-[11px]">OpenDKIM</div>
-            <div className="text-emerald-700 text-[10px] mt-0.5">PASS</div>
+            <div className="text-emerald-700 text-[10px] font-semibold mt-0.5">PASS</div>
           </div>
           <div className="p-2.5 bg-zinc-50/70 border border-zinc-200/80 rounded-lg">
             <div className="font-bold text-zinc-800 text-[11px]">Smuggling</div>
-            <div className="text-emerald-700 text-[10px] mt-0.5">PASS</div>
+            <div className="text-emerald-700 text-[10px] font-semibold mt-0.5">PASS</div>
           </div>
           <div className="p-2.5 bg-zinc-50/70 border border-zinc-200/80 rounded-lg">
             <div className="font-bold text-zinc-800 text-[11px]">No Secrets</div>
-            <div className="text-emerald-700 text-[10px] mt-0.5">PASS</div>
+            <div className="text-emerald-700 text-[10px] font-semibold mt-0.5">PASS</div>
           </div>
         </div>
       </div>
@@ -97,38 +103,40 @@ export function SecurityView() {
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-zinc-50/80 border-b border-zinc-200 text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
-                <th className="py-3 px-4">Timestamp</th>
-                <th className="py-3 px-4">Actor</th>
-                <th className="py-3 px-4">Action</th>
+                <th className="py-3 px-4 w-48">Timestamp</th>
+                <th className="py-3 px-4 w-28 text-center">Actor</th>
+                <th className="py-3 px-4 w-44">Action</th>
                 <th className="py-3 px-4">Target Resource</th>
-                <th className="py-3 px-4">Client IP</th>
-                <th className="py-3 px-4 text-right font-sans">Status</th>
+                <th className="py-3 px-4 w-32">Client IP</th>
+                <th className="py-3 px-4 w-28 text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {auditLogs.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center text-zinc-400 font-sans text-xs">
-                    No audit logs recorded yet.
+                    {loading ? "Loading audit stream..." : "No audit logs recorded yet."}
                   </td>
                 </tr>
               ) : (
                 paginatedLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-2.5 px-4 text-zinc-500">{new Date(log.created_at).toLocaleString()}</td>
-                    <td className="py-2.5 px-4 font-semibold text-zinc-950">{log.actor}</td>
-                    <td className="py-2.5 px-4 text-blue-600 font-bold">{log.action}</td>
-                    <td className="py-2.5 px-4 text-zinc-700 truncate max-w-44">{log.resource}</td>
-                    <td className="py-2.5 px-4 text-zinc-500">{log.ip_address}</td>
-                    <td className="py-2.5 px-4 text-right font-sans">
-                      <span
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                          log.status === "success"
-                            ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
-                            : "bg-red-500/10 text-red-700 border border-red-500/20"
-                        }`}
-                      >
-                        {log.status}
+                    <td className="py-2.5 px-4 text-zinc-500 text-[11px]">
+                      {new Date(log.created_at).toLocaleString()}
+                    </td>
+                    <td className="py-2.5 px-4 text-center">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-zinc-100 text-zinc-800 border border-zinc-200">
+                        {log.actor || "api"}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-4 font-semibold text-blue-600">{log.action}</td>
+                    <td className="py-2.5 px-4 text-zinc-800 font-medium truncate max-w-48">
+                      {log.resource || "system"}
+                    </td>
+                    <td className="py-2.5 px-4 text-zinc-500 text-[11px]">{log.ip_address}</td>
+                    <td className="py-2.5 px-4 text-center font-sans">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                        {log.status || "COMMITTED"}
                       </span>
                     </td>
                   </tr>

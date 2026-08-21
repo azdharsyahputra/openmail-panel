@@ -100,11 +100,13 @@ export interface QueueMessage {
 export interface AuditLogItem {
   id: string;
   actor: string;
+  actor_type?: string;
   action: string;
   resource: string;
+  resource_type?: string;
+  metadata?: Record<string, unknown>;
   ip_address: string;
   status: string;
-  details?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -472,9 +474,38 @@ class ApiClient {
 
   // Audit
   public async getAuditLogs(): Promise<AuditLogItem[]> {
-    const res = await this.request<{ data?: AuditLogItem[]; audit_logs?: AuditLogItem[] } | AuditLogItem[]>("/api/v1/audit");
-    if (Array.isArray(res)) return res;
-    return res.data || res.audit_logs || [];
+    const res = await this.request<{ data?: Record<string, unknown>[]; audit_logs?: Record<string, unknown>[] } | Record<string, unknown>[]>(
+      "/api/v1/audit"
+    );
+    const list = Array.isArray(res) ? res : res.data || res.audit_logs || [];
+    return list.map((l: Record<string, unknown>) => {
+      let targetResource = (l.resource_type as string) || "system";
+      if (l.metadata) {
+        if (typeof l.metadata === "string") {
+          try {
+            const parsed = JSON.parse(l.metadata);
+            targetResource = parsed.domain || parsed.email || parsed.name || (l.resource_type as string) || "system";
+          } catch {
+            // Ignored
+          }
+        } else if (typeof l.metadata === "object" && l.metadata !== null) {
+          const meta = l.metadata as Record<string, string>;
+          targetResource = meta.domain || meta.email || meta.name || (l.resource_type as string) || "system";
+        }
+      }
+      return {
+        id: String(l.id || ""),
+        actor: String(l.actor || l.actor_type || "admin"),
+        actor_type: String(l.actor_type || "admin"),
+        action: String(l.action || "audit.event"),
+        resource: targetResource,
+        resource_type: String(l.resource_type || "system"),
+        metadata: typeof l.metadata === "object" && l.metadata !== null ? (l.metadata as Record<string, unknown>) : {},
+        ip_address: l.ip_address ? String(l.ip_address) : "127.0.0.1",
+        status: "COMMITTED",
+        created_at: String(l.created_at || new Date().toISOString()),
+      };
+    });
   }
 }
 

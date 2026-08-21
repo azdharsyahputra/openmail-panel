@@ -282,25 +282,25 @@ export function MailboxesView() {
                         <div className="flex items-center justify-end gap-1.5 text-xs font-sans">
                           <button
                             onClick={() => openAliasDrawer(mb.email)}
-                            className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"
                           >
                             Aliases
                           </button>
                           <button
                             onClick={() => setPwResetMailbox(mb.email)}
-                            className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"
                           >
                             Password
                           </button>
                           <button
                             onClick={() => handleToggleStatus(mb)}
-                            className="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"
                           >
                             {mb.status === "active" ? "Suspend" : "Resume"}
                           </button>
                           <button
                             onClick={() => setMailboxToDelete(mb.email)}
-                            className="px-2.5 py-1 rounded-md text-red-600 hover:bg-red-50 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-red-50 hover:bg-red-100 border border-red-200/80 rounded-md text-red-700 shadow-2xs hover:border-red-300 transition-all cursor-pointer"
                           >
                             Delete
                           </button>

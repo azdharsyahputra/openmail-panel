@@ -252,25 +252,25 @@ export function QueueView() {
                         <div className="flex items-center justify-end gap-1.5 text-xs font-sans">
                           <button
                             onClick={() => handleInspect(qId)}
-                            className="px-2 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"
                           >
                             Inspect
                           </button>
                           <button
                             onClick={() => handleRetry(qId)}
-                            className="px-2 py-1 rounded-md text-emerald-600 hover:bg-emerald-50 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-md text-emerald-700 shadow-2xs hover:border-emerald-300 transition-all cursor-pointer"
                           >
                             Retry
                           </button>
                           <button
                             onClick={() => (msg.status === "hold" ? handleRelease(qId) : handleHold(qId))}
-                            className="px-2 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"
                           >
                             {msg.status === "hold" ? "Release" : "Hold"}
                           </button>
                           <button
                             onClick={() => setMessageToDelete(qId)}
-                            className="px-2 py-1 rounded-md text-red-600 hover:bg-red-50 font-medium cursor-pointer transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-red-50 hover:bg-red-100 border border-red-200/80 rounded-md text-red-700 shadow-2xs hover:border-red-300 transition-all cursor-pointer"
                           >
                             Delete
                           </button>
