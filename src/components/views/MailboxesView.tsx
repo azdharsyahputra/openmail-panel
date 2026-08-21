@@ -439,14 +439,15 @@ export function MailboxesView() {
               ) : (
                 aliases.map((al) => (
                   <div key={al.id} className="py-2 flex justify-between items-center">
-                    <span>{al.alias}</span>
+                    <span>{al.source || al.alias}</span>
                     <button
-                      onClick={() => handleDeleteAlias(al.alias)}
+                      onClick={() => handleDeleteAlias(al.source || al.alias || "")}
                       className="text-red-600 hover:underline text-[11px] cursor-pointer"
                     >
                       Delete
                     </button>
                   </div>
+
                 ))
               )}
             </div>

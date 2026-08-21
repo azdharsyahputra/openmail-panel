@@ -66,8 +66,9 @@ export interface AliasItem {
   id: string;
   domain_id: string;
   mailbox_id: string;
-  alias: string;
-  mailbox_email: string;
+  source: string;
+  destination: string;
+  alias?: string; // helper
   created_at: string;
 }
 
@@ -116,7 +117,9 @@ export interface HealthReport {
 }
 
 export interface DoctorCategory {
-  status: string;
+  name?: string;
+  status?: string;
+  passed?: boolean;
   checks: Record<string, string>;
 }
 
@@ -260,8 +263,9 @@ class ApiClient {
 
   // Domains
   public async getDomains(): Promise<DomainItem[]> {
-    const data = await this.request<{ domains: DomainItem[] } | DomainItem[]>("/api/v1/domains");
-    return Array.isArray(data) ? data : (data.domains || []);
+    const res = await this.request<{ data?: DomainItem[]; domains?: DomainItem[] } | DomainItem[]>("/api/v1/domains");
+    if (Array.isArray(res)) return res;
+    return res.data || res.domains || [];
   }
 
   public async createDomain(name: string): Promise<DomainItem> {
@@ -286,8 +290,11 @@ class ApiClient {
   }
 
   public async getDomainDKIM(name: string): Promise<DKIMKeyItem[]> {
-    const data = await this.request<{ keys: DKIMKeyItem[] } | DKIMKeyItem[]>(`/api/v1/domains/${encodeURIComponent(name)}/dkim`);
-    return Array.isArray(data) ? data : (data.keys || []);
+    const res = await this.request<{ data?: DKIMKeyItem[]; keys?: DKIMKeyItem[] } | DKIMKeyItem[]>(
+      `/api/v1/domains/${encodeURIComponent(name)}/dkim`
+    );
+    if (Array.isArray(res)) return res;
+    return res.data || res.keys || [];
   }
 
   public async generateDomainDKIM(name: string, selector: string): Promise<DKIMKeyItem> {
@@ -298,21 +305,28 @@ class ApiClient {
   }
 
   public async verifyDomainDKIM(name: string, selector: string): Promise<Record<string, unknown>> {
-    return this.request<Record<string, unknown>>(`/api/v1/domains/${encodeURIComponent(name)}/dkim/${encodeURIComponent(selector)}/verify`, {
-      method: "POST",
-    });
+    return this.request<Record<string, unknown>>(
+      `/api/v1/domains/${encodeURIComponent(name)}/dkim/${encodeURIComponent(selector)}/verify`,
+      {
+        method: "POST",
+      }
+    );
   }
 
   public async activateDomainDKIM(name: string, selector: string): Promise<void> {
-    return this.request<void>(`/api/v1/domains/${encodeURIComponent(name)}/dkim/${encodeURIComponent(selector)}/activate`, {
-      method: "POST",
-    });
+    return this.request<void>(
+      `/api/v1/domains/${encodeURIComponent(name)}/dkim/${encodeURIComponent(selector)}/activate`,
+      {
+        method: "POST",
+      }
+    );
   }
 
   // Mailboxes
   public async getMailboxes(): Promise<MailboxItem[]> {
-    const data = await this.request<{ mailboxes: MailboxItem[] } | MailboxItem[]>("/api/v1/mailboxes");
-    return Array.isArray(data) ? data : (data.mailboxes || []);
+    const res = await this.request<{ data?: MailboxItem[]; mailboxes?: MailboxItem[] } | MailboxItem[]>("/api/v1/mailboxes");
+    if (Array.isArray(res)) return res;
+    return res.data || res.mailboxes || [];
   }
 
   public async createMailbox(email: string, password: string, quotaBytes: number): Promise<MailboxItem> {
@@ -354,21 +368,30 @@ class ApiClient {
   }
 
   public async getAliases(email: string): Promise<AliasItem[]> {
-    const data = await this.request<{ aliases: AliasItem[] } | AliasItem[]>(`/api/v1/mailboxes/${encodeURIComponent(email)}/aliases`);
-    return Array.isArray(data) ? data : (data.aliases || []);
+    const res = await this.request<{ data?: AliasItem[]; aliases?: AliasItem[] } | AliasItem[]>(
+      `/api/v1/mailboxes/${encodeURIComponent(email)}/aliases`
+    );
+    const list = Array.isArray(res) ? res : res.data || res.aliases || [];
+    return list.map((a) => ({
+      ...a,
+      alias: a.source || a.alias || "",
+    }));
   }
 
-  public async createAlias(email: string, alias: string): Promise<AliasItem> {
+  public async createAlias(email: string, sourceAlias: string): Promise<AliasItem> {
     return this.request<AliasItem>(`/api/v1/mailboxes/${encodeURIComponent(email)}/aliases`, {
       method: "POST",
-      body: JSON.stringify({ alias }),
+      body: JSON.stringify({ source: sourceAlias }),
     });
   }
 
-  public async deleteAlias(email: string, alias: string): Promise<void> {
-    return this.request<void>(`/api/v1/mailboxes/${encodeURIComponent(email)}/aliases/${encodeURIComponent(alias)}`, {
-      method: "DELETE",
-    });
+  public async deleteAlias(email: string, sourceAlias: string): Promise<void> {
+    return this.request<void>(
+      `/api/v1/mailboxes/${encodeURIComponent(email)}/aliases/${encodeURIComponent(sourceAlias)}`,
+      {
+        method: "DELETE",
+      }
+    );
   }
 
   // Queue
@@ -378,8 +401,11 @@ class ApiClient {
 
   public async getQueueMessages(status?: string): Promise<QueueMessage[]> {
     const query = status ? `?status=${encodeURIComponent(status)}` : "";
-    const data = await this.request<{ messages: QueueMessage[] } | QueueMessage[]>(`/api/v1/queue${query}`);
-    return Array.isArray(data) ? data : (data.messages || []);
+    const res = await this.request<{ data?: QueueMessage[]; messages?: QueueMessage[] } | QueueMessage[]>(
+      `/api/v1/queue${query}`
+    );
+    if (Array.isArray(res)) return res;
+    return res.data || res.messages || [];
   }
 
   public async inspectQueueMessage(id: string): Promise<{ content: string }> {
@@ -430,8 +456,9 @@ class ApiClient {
 
   // Audit
   public async getAuditLogs(): Promise<AuditLogItem[]> {
-    const data = await this.request<{ audit_logs: AuditLogItem[] } | AuditLogItem[]>("/api/v1/audit");
-    return Array.isArray(data) ? data : (data.audit_logs || []);
+    const res = await this.request<{ data?: AuditLogItem[]; audit_logs?: AuditLogItem[] } | AuditLogItem[]>("/api/v1/audit");
+    if (Array.isArray(res)) return res;
+    return res.data || res.audit_logs || [];
   }
 }
 
