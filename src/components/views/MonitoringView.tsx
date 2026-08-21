@@ -1,16 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Activity,
-  Cpu,
-  HardDrive,
-  RefreshCw,
-  Server,
-  Zap,
-  Clock,
-  TrendingUp,
-} from "lucide-react";
 
 export function MonitoringView() {
   const [metricsText, setMetricsText] = useState<string>("");
@@ -36,82 +26,50 @@ export function MonitoringView() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">System Telemetry & Metrics</h1>
-          <p className="text-sm text-slate-500">Prometheus scrapers, cluster load, and message throughput</p>
+          <h1 className="text-base font-bold text-slate-900">System Telemetry & Metrics</h1>
+          <p className="text-xs text-slate-500">Prometheus scrapers, cluster load, and message throughput</p>
         </div>
         <button
           onClick={loadMetrics}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-colors cursor-pointer"
+          disabled={loading}
+          className="px-3 py-1 text-xs font-medium bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-700 cursor-pointer"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          <span>Refresh Metrics</span>
+          {loading ? "Scraping..." : "Scrape Metrics"}
         </button>
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">SMTP Latency</span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 font-mono">1.2 ms</div>
-          <p className="text-xs text-slate-400 mt-1">p99 Inbound Pipeline</p>
+      <div className="grid grid-cols-4 gap-3 font-mono text-xs text-center">
+        <div className="p-3 bg-white border border-slate-200 rounded">
+          <div className="text-[10px] text-slate-400 uppercase">SMTP p99 Latency</div>
+          <div className="text-xl font-bold text-slate-900 mt-1">1.2 ms</div>
         </div>
-
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Goroutines</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Zap className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 font-mono">34</div>
-          <p className="text-xs text-emerald-600 font-medium mt-1">Bounded Lifecycle</p>
+        <div className="p-3 bg-white border border-slate-200 rounded">
+          <div className="text-[10px] text-slate-400 uppercase">Goroutines</div>
+          <div className="text-xl font-bold text-slate-900 mt-1">34</div>
         </div>
-
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Database Conns</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Server className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 font-mono">6 / 50</div>
-          <p className="text-xs text-slate-400 mt-1">PostgreSQL Max 50 Pool</p>
+        <div className="p-3 bg-white border border-slate-200 rounded">
+          <div className="text-[10px] text-slate-400 uppercase">DB Pool (Max 50)</div>
+          <div className="text-xl font-bold text-slate-900 mt-1">6 / 50</div>
         </div>
-
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Memory Alloc</span>
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Cpu className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 font-mono">18.4 MB</div>
-          <p className="text-xs text-slate-400 mt-1">Go Runtime Heap</p>
+        <div className="p-3 bg-white border border-slate-200 rounded">
+          <div className="text-[10px] text-slate-400 uppercase">Runtime Heap</div>
+          <div className="text-xl font-bold text-slate-900 mt-1">18.4 MB</div>
         </div>
       </div>
 
       {/* Prometheus Raw Stream */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-slate-500" />
-            <h3 className="font-bold text-slate-900 text-sm">Prometheus Metrics Stream (/metrics)</h3>
-          </div>
-          <span className="text-xs text-slate-400 font-mono">OpenMetrics 1.0 Format</span>
+      <div className="bg-white border border-slate-200 rounded overflow-hidden">
+        <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-xs font-mono font-bold text-slate-700 uppercase">
+          Prometheus Metrics Stream (/metrics)
         </div>
-
-        <div className="p-4 bg-slate-900 text-slate-100 overflow-x-auto max-h-[50vh] font-mono text-xs whitespace-pre-wrap">
+        <pre className="p-4 bg-slate-900 text-slate-100 font-mono text-xs max-h-[55vh] overflow-y-auto whitespace-pre-wrap">
           {metricsText || "Loading Prometheus registry..."}
-        </div>
+        </pre>
       </div>
     </div>
   );
