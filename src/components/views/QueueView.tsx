@@ -395,7 +395,7 @@ export function QueueView() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-zinc-950 text-zinc-100 p-4 rounded-xl font-mono text-xs leading-relaxed whitespace-pre-wrap shrink-0">
+            <div className="flex-1 min-h-0 overflow-y-auto bg-zinc-950 text-zinc-100 p-4 rounded-xl font-mono text-xs leading-relaxed whitespace-pre-wrap select-text">
               {loadingInspect ? "Fetching message raw headers and body..." : inspectContent}
             </div>
           </div>

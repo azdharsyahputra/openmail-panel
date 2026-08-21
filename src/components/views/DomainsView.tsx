@@ -467,7 +467,7 @@ export function DomainsView() {
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto text-xs space-y-4 font-mono">
+            <div className="flex-1 min-h-0 overflow-y-auto text-xs space-y-4 font-mono select-text">
               {activeTab === "dns" && (
                 <div className="space-y-3">
                   <p className="text-zinc-500 font-sans text-xs">
