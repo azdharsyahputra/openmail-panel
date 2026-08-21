@@ -210,9 +210,9 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
 
       {/* Main Mission Control Grid - Fills remaining height */}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left Column (2 Cols): Subsystem Daemon Matrix & Quick Actions */}
+        {/* Left Column (2 Cols): Subsystem Daemon Matrix & Clean Combined Quick Actions */}
         <div className="lg:col-span-2 rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between h-full min-h-0">
-          <div className="flex-1 flex flex-col justify-between min-h-0">
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Subsystem Header */}
             <div className="shrink-0 px-5 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
               <div className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
               </span>
             </div>
 
-            {/* 6 Subsystems Grid - Generously sized */}
+            {/* 6 Subsystems Grid */}
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs flex-1">
               {/* Postfix */}
               <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
@@ -331,18 +331,19 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
                 </div>
               </div>
             </div>
-
-            {/* Invariant Footer Strip */}
-            <div className="px-5 py-2.5 bg-zinc-50/50 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
-              <span>Cluster Schema: v003_applied (PostgreSQL 16)</span>
-              <span>Zero-Trust Invariants Verified</span>
-            </div>
           </div>
 
-          {/* Quick Action Shortcuts Deck */}
-          <div className="shrink-0 p-4 bg-zinc-50/70 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs font-semibold text-zinc-800 font-mono">Quick Dispatch:</span>
-            <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
+          {/* Unified Clean Bottom Deck (No Text Overlap) */}
+          <div className="shrink-0 px-5 py-3.5 bg-zinc-50/80 border-t border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-500">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>
+                Cluster Schema: <strong className="text-zinc-800 font-semibold">v003_applied</strong> (PostgreSQL 16) · Invariants Verified
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-sans">
+              <span className="text-xs font-semibold text-zinc-700 font-mono hidden md:inline">Quick Dispatch:</span>
               <button
                 onClick={() => onNavigate("queue")}
                 className="px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1.5 transition-all"
@@ -409,10 +410,10 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
             )}
           </div>
 
-          <div className="shrink-0 p-2.5 bg-zinc-50/60 border-t border-zinc-100 text-center">
-            <span className="text-[10px] font-mono text-zinc-400">
-              🔒 Immutable audit trail verified by PostgreSQL
-            </span>
+          {/* Clean Footer with Lucide Icon */}
+          <div className="shrink-0 p-2.5 bg-zinc-50/60 border-t border-zinc-100 flex items-center justify-center gap-1.5 text-[11px] font-mono text-zinc-400">
+            <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+            <span>Immutable audit trail verified by PostgreSQL</span>
           </div>
         </div>
       </div>
