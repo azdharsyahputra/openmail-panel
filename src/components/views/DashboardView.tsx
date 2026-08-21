@@ -323,16 +323,9 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
           </div>
 
           {/* Bottom Deck */}
-          <div className="shrink-0 px-5 py-3.5 bg-zinc-50/80 border-t border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-500">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>
-                Cluster Schema: <strong className="text-zinc-800 font-semibold">v003_applied</strong> (PostgreSQL 16) · Invariants Verified
-              </span>
-            </div>
-
+          <div className="shrink-0 px-5 py-3 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold text-zinc-700 font-mono">Quick Dispatch:</span>
             <div className="flex items-center gap-2 text-xs font-sans">
-              <span className="text-xs font-semibold text-zinc-700 font-mono hidden md:inline">Quick Dispatch:</span>
               <button
                 onClick={() => onNavigate("queue")}
                 className="px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1.5 transition-all"
@@ -408,12 +401,6 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
                 );
               })
             )}
-          </div>
-
-          {/* Footer */}
-          <div className="shrink-0 p-2.5 bg-zinc-50/60 border-t border-zinc-100 flex items-center justify-center gap-1.5 text-[11px] font-mono text-zinc-400">
-            <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-            <span>Immutable audit trail verified by PostgreSQL</span>
           </div>
         </div>
       </div>
