@@ -113,14 +113,14 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
           onClick={() => onNavigate("domains")}
           className="group relative p-4 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
                 <Globe className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-zinc-700">Domains</span>
+              <span className="text-xs font-semibold text-zinc-700 truncate">Domains</span>
             </div>
-            <span className="text-[11px] font-mono font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 flex items-center gap-0.5">
+            <span className="text-[11px] font-mono font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 flex items-center gap-0.5 whitespace-nowrap shrink-0">
               {activeDomainsCount} active
               <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
@@ -136,14 +136,14 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
           onClick={() => onNavigate("mailboxes")}
           className="group relative p-4 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
                 <Mail className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-zinc-700">Mailboxes</span>
+              <span className="text-xs font-semibold text-zinc-700 truncate">Mailboxes</span>
             </div>
-            <span className="text-[11px] font-mono font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 flex items-center gap-0.5">
+            <span className="text-[11px] font-mono font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 flex items-center gap-0.5 whitespace-nowrap shrink-0">
               {activeMailboxesCount} active
               <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
@@ -159,14 +159,14 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
           onClick={() => onNavigate("queue")}
           className="group relative p-4 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
                 <Layers className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-zinc-700">Transport Queue</span>
+              <span className="text-xs font-semibold text-zinc-700 truncate">Mail Queue</span>
             </div>
-            <span className="text-[11px] font-mono font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-0.5">
+            <span className="text-[11px] font-mono font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-0.5 whitespace-nowrap shrink-0">
               {queueSummary?.deferred || 0} deferred
               <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
@@ -186,14 +186,14 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
           onClick={() => onNavigate("mailboxes")}
           className="group relative p-4 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0">
                 <HardDrive className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-zinc-700">Maildir Storage</span>
+              <span className="text-xs font-semibold text-zinc-700 truncate">Storage Pool</span>
             </div>
-            <span className="text-[11px] font-mono font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+            <span className="text-[11px] font-mono font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 whitespace-nowrap shrink-0">
               {storagePercent}% used
             </span>
           </div>
