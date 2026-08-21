@@ -223,11 +223,11 @@ export function MailboxesView() {
           <table className="w-full text-left text-xs">
             <thead className="bg-zinc-50/80 border-b border-zinc-200 font-mono text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
-                <th className="py-3 px-4">Mailbox Account</th>
-                <th className="py-3 px-4 w-28 text-center">Provider</th>
-                <th className="py-3 px-4 w-44">Storage Quota</th>
-                <th className="py-3 px-4 w-28 text-center">Status</th>
-                <th className="py-3 px-4 text-right w-72">Actions</th>
+                <th className="py-3.5 px-6 text-left">Mailbox Account</th>
+                <th className="py-3.5 px-4 w-32 text-center">Provider</th>
+                <th className="py-3.5 px-4 w-48 text-center">Storage Quota</th>
+                <th className="py-3.5 px-4 w-32 text-center">Status</th>
+                <th className="py-3.5 px-6 w-72 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -239,10 +239,10 @@ export function MailboxesView() {
                 </tr>
               ) : (
                 paginatedMailboxes.map((mb) => {
-                  const percent = mb.quota_bytes > 0 ? Math.round(((mb.used_bytes || 0) / mb.quota_bytes) * 100) : 0;
+                  const percent = mb.quota_bytes > 0 ? Math.min(100, Math.round(((mb.used_bytes || 0) / mb.quota_bytes) * 100)) : 0;
                   return (
                     <tr key={mb.id} className="hover:bg-zinc-50/50 transition-colors">
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-6 text-left">
                         <span className="font-semibold text-zinc-950 font-mono text-xs block">{mb.email}</span>
                         <span className="text-[10px] text-zinc-400 font-mono">
                           Provision: {mb.provisioning_status || "ready"}
@@ -253,16 +253,16 @@ export function MailboxesView() {
                           {mb.identity_provider || "local"}
                         </span>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="space-y-1 max-w-36 font-mono text-[11px]">
-                          <div className="flex justify-between text-zinc-600">
+                      <td className="py-3 px-4 text-center">
+                        <div className="space-y-1 max-w-36 mx-auto font-mono text-[11px]">
+                          <div className="flex justify-between text-zinc-600 text-[10px]">
                             <span>{formatBytes(mb.used_bytes || 0)}</span>
                             <span className="text-zinc-400">/ {formatBytes(mb.quota_bytes)}</span>
                           </div>
                           <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${percent > 85 ? "bg-red-500" : percent > 60 ? "bg-amber-500" : "bg-zinc-950"}`}
-                              style={{ width: `${Math.min(100, Math.max(percent, 2))}%` }}
+                              style={{ width: `${Math.max(percent, 2)}%` }}
                             />
                           </div>
                         </div>
@@ -278,8 +278,8 @@ export function MailboxesView() {
                           {mb.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5 text-xs font-sans">
+                      <td className="py-3 px-6 text-center">
+                        <div className="flex items-center justify-center gap-1.5 text-xs font-sans">
                           <button
                             onClick={() => openAliasDrawer(mb.email)}
                             className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"

@@ -219,12 +219,12 @@ export function QueueView() {
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-zinc-50/80 border-b border-zinc-200 text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
-                <th className="py-3 px-4 w-32">Queue ID</th>
-                <th className="py-3 px-4">Sender</th>
-                <th className="py-3 px-4">Recipient</th>
-                <th className="py-3 px-4 w-24 text-center">Size</th>
-                <th className="py-3 px-4 w-28 text-center">Status</th>
-                <th className="py-3 px-4 text-right w-64">Actions</th>
+                <th className="py-3.5 px-4 w-36 text-center">Queue ID</th>
+                <th className="py-3.5 px-4 text-left">Sender</th>
+                <th className="py-3.5 px-4 text-left">Recipient</th>
+                <th className="py-3.5 px-4 w-28 text-center">Size</th>
+                <th className="py-3.5 px-4 w-32 text-center">Status</th>
+                <th className="py-3.5 px-6 w-72 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -239,17 +239,17 @@ export function QueueView() {
                   const qId = msg.queue_id || msg.id || "";
                   return (
                     <tr key={qId} className="hover:bg-zinc-50/50 transition-colors">
-                      <td className="py-2.5 px-4 font-bold text-zinc-950">{qId}</td>
-                      <td className="py-2.5 px-4 text-zinc-700 truncate max-w-44">{msg.sender || "<empty>"}</td>
-                      <td className="py-2.5 px-4 text-zinc-700 truncate max-w-44">{msg.recipient}</td>
+                      <td className="py-2.5 px-4 font-bold text-zinc-950 text-center">{qId}</td>
+                      <td className="py-2.5 px-4 text-zinc-700 truncate max-w-44 text-left">{msg.sender || "<empty>"}</td>
+                      <td className="py-2.5 px-4 text-zinc-700 truncate max-w-44 text-left">{msg.recipient}</td>
                       <td className="py-2.5 px-4 text-center text-zinc-500">{formatSize(msg.size || msg.size_bytes)}</td>
                       <td className="py-2.5 px-4 text-center">
                         <span className="px-2 py-0.5 rounded-md text-[10px] uppercase font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
                           {msg.status}
                         </span>
                       </td>
-                      <td className="py-2.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5 text-xs font-sans">
+                      <td className="py-2.5 px-6 text-center">
+                        <div className="flex items-center justify-center gap-1.5 text-xs font-sans">
                           <button
                             onClick={() => handleInspect(qId)}
                             className="px-2.5 py-1 text-[11px] font-medium bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md text-zinc-800 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer"

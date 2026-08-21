@@ -105,12 +105,12 @@ export function SecurityView() {
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-zinc-50/80 border-b border-zinc-200 text-zinc-500 uppercase text-[10px] sticky top-0 z-10 backdrop-blur-xs">
               <tr>
-                <th className="py-3 px-4 w-48">Timestamp</th>
-                <th className="py-3 px-4 w-28 text-center">Actor</th>
-                <th className="py-3 px-4 w-44">Action</th>
-                <th className="py-3 px-4">Target Resource</th>
-                <th className="py-3 px-4 w-32">Client IP</th>
-                <th className="py-3 px-4 w-28 text-center">Status</th>
+                <th className="py-3.5 px-6 w-52 text-left">Timestamp</th>
+                <th className="py-3.5 px-4 w-28 text-center">Actor</th>
+                <th className="py-3.5 px-4 w-44 text-center">Action</th>
+                <th className="py-3.5 px-4 text-left">Target Resource</th>
+                <th className="py-3.5 px-4 w-36 text-center">Client IP</th>
+                <th className="py-3.5 px-6 w-32 text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -123,7 +123,7 @@ export function SecurityView() {
               ) : (
                 paginatedLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-2.5 px-4 text-zinc-500 text-[11px]">
+                    <td className="py-2.5 px-6 text-zinc-500 text-[11px] text-left">
                       {new Date(log.created_at).toLocaleString()}
                     </td>
                     <td className="py-2.5 px-4 text-center">
@@ -131,12 +131,12 @@ export function SecurityView() {
                         {log.actor || "api"}
                       </span>
                     </td>
-                    <td className="py-2.5 px-4 font-semibold text-blue-600">{log.action}</td>
-                    <td className="py-2.5 px-4 text-zinc-800 font-medium truncate max-w-48">
+                    <td className="py-2.5 px-4 font-semibold text-blue-600 text-center">{log.action}</td>
+                    <td className="py-2.5 px-4 text-zinc-800 font-medium truncate max-w-48 text-left">
                       {log.resource || "system"}
                     </td>
-                    <td className="py-2.5 px-4 text-zinc-500 text-[11px]">{log.ip_address}</td>
-                    <td className="py-2.5 px-4 text-center font-sans">
+                    <td className="py-2.5 px-4 text-zinc-500 text-[11px] text-center">{log.ip_address}</td>
+                    <td className="py-2.5 px-6 text-center font-sans">
                       <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
                         {log.status || "COMMITTED"}
                       </span>
