@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar, NavTab } from "@/components/layout/Sidebar";
@@ -14,9 +14,47 @@ import { SecurityView } from "@/components/views/SecurityView";
 import { MonitoringView } from "@/components/views/MonitoringView";
 import { SystemView } from "@/components/views/SystemView";
 
+const VALID_TABS: NavTab[] = [
+  "dashboard",
+  "domains",
+  "mailboxes",
+  "identity",
+  "queue",
+  "security",
+  "monitoring",
+  "system",
+];
+
 export default function MainPage() {
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
+
+  const [activeTab, setActiveTab] = useState<NavTab>(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "") as NavTab;
+      if (VALID_TABS.includes(hash)) return hash;
+      const saved = localStorage.getItem("openmail_active_tab") as NavTab;
+      if (VALID_TABS.includes(saved)) return saved;
+    }
+    return "dashboard";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && user) {
+      window.location.hash = activeTab;
+      localStorage.setItem("openmail_active_tab", activeTab);
+    }
+  }, [activeTab, user]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#", "") as NavTab;
+      if (VALID_TABS.includes(hash)) {
+        setActiveTab(hash);
+      }
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   if (loading) {
     return (
