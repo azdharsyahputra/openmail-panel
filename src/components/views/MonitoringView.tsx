@@ -35,9 +35,9 @@ export function MonitoringView() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
+    <div className="h-full flex flex-col space-y-5 max-w-6xl mx-auto">
+      {/* Header - Fixed top */}
+      <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
         <div>
           <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">System Telemetry & Metrics</h1>
           <p className="text-xs text-zinc-500 mt-0.5">Prometheus scrapers, cluster load, and message throughput</p>
@@ -54,8 +54,8 @@ export function MonitoringView() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-zinc-200/80 gap-6 text-xs font-medium">
+      {/* Tabs - Fixed top */}
+      <div className="shrink-0 flex border-b border-zinc-200/80 gap-6 text-xs font-medium">
         <button
           onClick={() => setActiveTab("overview")}
           className={`pb-2.5 cursor-pointer transition-colors ${
@@ -80,7 +80,7 @@ export function MonitoringView() {
 
       {/* Tab 1: Overview */}
       {activeTab === "overview" && (
-        <div className="space-y-5">
+        <div className="space-y-5 overflow-y-auto pr-1">
           {/* Metrics Row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 font-mono text-xs text-center">
             <div className="p-4 bg-white border border-zinc-200/80 rounded-xl shadow-2xs">
@@ -143,22 +143,28 @@ export function MonitoringView() {
         </div>
       )}
 
-      {/* Tab 2: Raw Prometheus */}
+      {/* Tab 2: Raw Prometheus Terminal Viewer */}
       {activeTab === "raw" && (
-        <div className="rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs space-y-0">
-          <div className="px-4 py-3 bg-zinc-50/70 border-b border-zinc-200 flex justify-between items-center text-xs font-mono">
-            <span className="font-semibold text-zinc-800 uppercase tracking-wider">
-              Prometheus Metrics Scraper Output (/metrics)
-            </span>
+        <div className="flex-1 flex flex-col min-h-0 rounded-xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs">
+          {/* Terminal Box Header */}
+          <div className="shrink-0 px-4 py-2.5 bg-zinc-50/80 border-b border-zinc-200 flex justify-between items-center text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <span className="font-semibold text-zinc-800 uppercase tracking-wider text-[11px]">
+                Prometheus Stream (/metrics)
+              </span>
+            </div>
             <button
               onClick={copyMetrics}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-200/60 font-sans cursor-pointer text-xs transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-200/60 font-sans cursor-pointer text-xs transition-colors"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? "Copied" : "Copy Stream"}</span>
             </button>
           </div>
-          <pre className="p-5 bg-zinc-950 text-zinc-100 font-mono text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed">
+
+          {/* Terminal Scrollable Logs Content */}
+          <pre className="flex-1 overflow-y-auto min-h-0 p-5 bg-zinc-950 text-zinc-100 font-mono text-xs leading-relaxed whitespace-pre-wrap select-text">
             {metricsText || "Loading Prometheus registry..."}
           </pre>
         </div>
