@@ -13,9 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  Globe,
-  ShieldCheck,
-  CheckCircle2,
 } from "lucide-react";
 
 export function DomainsView() {
@@ -188,13 +185,18 @@ export function DomainsView() {
 
   return (
     <div className="h-full flex flex-col space-y-4 max-w-6xl mx-auto min-h-0">
-      {/* Header Bar */}
+      {/* Crisp, Direct Header Bar */}
       <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-3">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">Virtual Domains</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            DNS routing records, DKIM cryptographic milter keys, and domain health diagnostics
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-zinc-950 tracking-tight">Virtual Domains</h1>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Manage virtual mail routing domains, authoritative DNS, and DKIM milter keys
+            </p>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+            {activeCount} Active
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -221,45 +223,9 @@ export function DomainsView() {
         </div>
       )}
 
-      {/* Top 3 KPI Summary Cards */}
-      <div className="shrink-0 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Registered Domains</span>
-            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[10px] font-mono font-semibold">
-              {activeCount} ACTIVE
-            </span>
-          </div>
-          <div className="text-2xl font-bold text-zinc-950 font-mono">{domains.length}</div>
-          <div className="text-[11px] text-zinc-500 font-sans">Virtual MX and submission routing</div>
-        </div>
-
-        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">DKIM Cryptography</span>
-            <span className="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-mono font-semibold">
-              RSA-2048
-            </span>
-          </div>
-          <div className="text-2xl font-bold text-zinc-950 font-mono">100%</div>
-          <div className="text-[11px] text-zinc-500 font-sans">Outbound signature milter active</div>
-        </div>
-
-        <div className="p-4 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">DNS & Transport</span>
-            <span className="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-md border border-zinc-200 text-[10px] font-mono font-semibold">
-              READY
-            </span>
-          </div>
-          <div className="text-2xl font-bold text-zinc-950 font-mono">MX / SPF / DMARC</div>
-          <div className="text-[11px] text-zinc-500 font-sans">RFC 7208 & 7489 policy enforced</div>
-        </div>
-      </div>
-
-      {/* Table Container Card with Integrated Search */}
+      {/* Main Table Container with Integrated Search & Filter Header */}
       <div className="flex-1 min-h-0 rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between">
-        {/* Search & Filter Header Bar */}
+        {/* Search & Status Filter Bar */}
         <div className="shrink-0 px-4 py-3 bg-zinc-50/80 border-b border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
