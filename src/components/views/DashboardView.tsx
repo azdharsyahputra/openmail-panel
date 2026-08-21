@@ -391,22 +391,33 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
             {auditLogs.length === 0 ? (
               <div className="py-12 text-center text-zinc-400 text-xs font-sans">No recent activity</div>
             ) : (
-              auditLogs.map((log) => (
-                <div key={log.id} className="p-3 hover:bg-zinc-50/50 transition-colors space-y-1">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-semibold text-blue-600 text-xs">{log.action}</span>
-                    <span className="text-[10px] text-zinc-400">
-                      {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </span>
+              auditLogs.map((log) => {
+                const actorNorm = (log.actor || "api").toLowerCase();
+                const actorClass = actorNorm.includes("admin")
+                  ? "bg-purple-500/10 text-purple-700 border-purple-200"
+                  : actorNorm.includes("api")
+                  ? "bg-sky-500/10 text-sky-700 border-sky-200"
+                  : actorNorm.includes("system")
+                  ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
+                  : "bg-zinc-100 text-zinc-700 border-zinc-200";
+
+                return (
+                  <div key={log.id} className="p-3 hover:bg-zinc-50/50 transition-colors space-y-1">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-semibold text-blue-600 text-xs">{log.action}</span>
+                      <span className="text-[10px] text-zinc-400">
+                        {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-zinc-700 font-sans truncate">
+                      <span className={`font-mono text-[10px] px-1.5 py-0.2 rounded border mr-1.5 uppercase font-bold ${actorClass}`}>
+                        {log.actor || "api"}
+                      </span>
+                      <span className="font-mono text-zinc-800 font-medium">{log.resource}</span>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-zinc-700 font-sans truncate">
-                    <span className="font-mono text-[10px] bg-zinc-100 text-zinc-800 px-1.5 py-0.2 rounded border border-zinc-200 mr-1.5 uppercase font-bold">
-                      {log.actor || "api"}
-                    </span>
-                    <span className="font-mono text-zinc-800 font-medium">{log.resource}</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 

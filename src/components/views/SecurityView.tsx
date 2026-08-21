@@ -121,28 +121,39 @@ export function SecurityView() {
                   </td>
                 </tr>
               ) : (
-                paginatedLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-2.5 px-6 text-zinc-500 text-[11px] text-left">
-                      {new Date(log.created_at).toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-zinc-100 text-zinc-800 border border-zinc-200">
-                        {log.actor || "api"}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-4 font-semibold text-blue-600 text-center">{log.action}</td>
-                    <td className="py-2.5 px-4 text-zinc-800 font-medium truncate max-w-48 text-left">
-                      {log.resource || "system"}
-                    </td>
-                    <td className="py-2.5 px-4 text-zinc-500 text-[11px] text-center">{log.ip_address}</td>
-                    <td className="py-2.5 px-6 text-center font-sans">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-                        {log.status || "COMMITTED"}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                paginatedLogs.map((log) => {
+                  const actorNorm = (log.actor || "api").toLowerCase();
+                  const actorClass = actorNorm.includes("admin")
+                    ? "bg-purple-500/10 text-purple-700 border-purple-200"
+                    : actorNorm.includes("api")
+                    ? "bg-sky-500/10 text-sky-700 border-sky-200"
+                    : actorNorm.includes("system")
+                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
+                    : "bg-zinc-100 text-zinc-700 border-zinc-200";
+
+                  return (
+                    <tr key={log.id} className="hover:bg-zinc-50/50 transition-colors">
+                      <td className="py-2.5 px-6 text-zinc-500 text-[11px] text-left">
+                        {new Date(log.created_at).toLocaleString()}
+                      </td>
+                      <td className="py-2.5 px-4 text-center">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border ${actorClass}`}>
+                          {log.actor || "api"}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-4 font-semibold text-blue-600 text-center">{log.action}</td>
+                      <td className="py-2.5 px-4 text-zinc-800 font-medium truncate max-w-48 text-left">
+                        {log.resource || "system"}
+                      </td>
+                      <td className="py-2.5 px-4 text-zinc-500 text-[11px] text-center">{log.ip_address}</td>
+                      <td className="py-2.5 px-6 text-center font-sans">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                          {log.status || "COMMITTED"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
