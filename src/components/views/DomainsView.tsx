@@ -492,52 +492,73 @@ export function DomainsView() {
                         host: string;
                         value: string;
                         description: string;
+                        note?: string;
                       }
+
+                      const normalizeHost = (rawHost: string) => {
+                        if (!rawHost || rawHost === "@" || rawHost === selectedDomain) return "@";
+                        let clean = rawHost.trim();
+                        if (clean.endsWith(`.${selectedDomain}`)) {
+                          clean = clean.slice(0, -(selectedDomain.length + 1));
+                        } else if (clean.endsWith(`.${selectedDomain}.`)) {
+                          clean = clean.slice(0, -(selectedDomain.length + 2));
+                        }
+                        return clean || "@";
+                      };
 
                       const list: ExpandedRecord[] = [];
 
                       if (dnsData.mx) {
+                        const h = normalizeHost(dnsData.mx.host || "@");
                         list.push({
                           type: "MX",
-                          host: dnsData.mx.host || "@",
+                          host: h,
                           value: `${dnsData.mx.priority || 10} ${dnsData.mx.value}`,
                           description: `Directs incoming emails for @${selectedDomain} to the MailOpen mail exchange server.`,
+                          note: h === "@" ? "Enter @ or leave blank in your DNS provider." : `Enter '${h}' in your DNS provider.`,
                         });
                       }
 
                       if (dnsData.spf) {
+                        const h = normalizeHost(dnsData.spf.host || "@");
                         list.push({
                           type: "TXT (SPF)",
-                          host: dnsData.spf.host || "@",
+                          host: h,
                           value: dnsData.spf.value,
                           description: `Authorizes MailOpen IP servers to send emails on behalf of ${selectedDomain} and prevents email spoofing.`,
+                          note: "Enter @ or leave blank as the Host Name.",
                         });
                       }
 
                       if (dnsData.dmarc) {
+                        const h = normalizeHost(dnsData.dmarc.host || "_dmarc");
                         list.push({
                           type: "TXT (DMARC)",
-                          host: dnsData.dmarc.host || "_dmarc",
+                          host: h,
                           value: dnsData.dmarc.value,
                           description: `Enforces RFC 7489 policy alignment and requests aggregate delivery reports for unauthenticated emails.`,
+                          note: `Enter '${h}' into Cloudflare / GoDaddy / Namecheap (do NOT add .${selectedDomain} suffix).`,
                         });
                       }
 
                       if (dnsData.dkim) {
+                        const h = normalizeHost(dnsData.dkim.host || "default._domainkey");
                         list.push({
                           type: "TXT (DKIM)",
-                          host: dnsData.dkim.host || "default._domainkey",
+                          host: h,
                           value: dnsData.dkim.value,
                           description: `Cryptographic 2048-bit RSA public key used by inbox providers (Gmail, Outlook) to verify outbound header integrity.`,
+                          note: `Enter '${h}' as the Name / Host in your DNS panel.`,
                         });
                       }
 
                       // Fallback if records array was used
                       if (list.length === 0 && dnsData.records && dnsData.records.length > 0) {
                         dnsData.records.forEach((r) => {
+                          const h = normalizeHost(r.name || r.host || "@");
                           list.push({
                             type: r.type || "TXT",
-                            host: r.name || r.host || "@",
+                            host: h,
                             value: r.value,
                             description: "Authoritative DNS record for domain operations.",
                           });
@@ -549,28 +570,33 @@ export function DomainsView() {
                       }
 
                       return list.map((rec, i) => (
-                        <div key={i} className="p-4 bg-white rounded-xl border border-zinc-200/80 space-y-2.5 shadow-2xs">
-                          {/* Title & Type */}
-                          <div className="flex items-center justify-between font-mono">
+                        <div key={i} className="p-4 bg-white rounded-xl border border-zinc-200/80 space-y-3 shadow-2xs">
+                          {/* Title & Type & TTL */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 font-mono border-b border-zinc-100 pb-2">
                             <div className="flex items-center gap-2">
                               <span className="px-2 py-0.5 text-[10px] font-bold bg-zinc-950 text-white rounded uppercase">
                                 {rec.type}
                               </span>
                               <span className="text-[11px] font-semibold text-zinc-800">{rec.description}</span>
                             </div>
-                            <span className="text-[10px] text-zinc-400">TTL: Auto (3600)</span>
+                            <span className="px-2.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full">
+                              TTL: Auto (3600s / 1 Hour)
+                            </span>
                           </div>
 
                           {/* Host Row */}
                           <div className="space-y-1">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase font-mono">Name / Host / Subdomain:</span>
+                            <div className="flex justify-between items-center text-[10px] font-mono">
+                              <span className="font-bold text-zinc-700 uppercase">Name / Host / Subdomain:</span>
+                              {rec.note && <span className="text-zinc-500 font-sans italic">{rec.note}</span>}
+                            </div>
                             <div className="flex items-center justify-between gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200/80 font-mono text-xs">
-                              <code className="text-zinc-900 font-bold">{rec.host}</code>
+                              <code className="text-zinc-950 font-bold text-xs">{rec.host}</code>
                               <button
                                 onClick={() => copyToClipboard(rec.host, `host-${i}`)}
-                                className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-950 font-sans font-medium px-2 py-0.5 bg-white border border-zinc-200 rounded shadow-2xs cursor-pointer transition-all"
+                                className="flex items-center gap-1 text-[11px] text-zinc-700 hover:text-zinc-950 font-sans font-medium px-2.5 py-1 bg-white border border-zinc-200 rounded-md shadow-2xs cursor-pointer transition-all shrink-0"
                               >
-                                {copiedKey === `host-${i}` ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3 text-zinc-400" />}
+                                {copiedKey === `host-${i}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
                                 <span>{copiedKey === `host-${i}` ? "Copied" : "Copy Host"}</span>
                               </button>
                             </div>
@@ -578,14 +604,14 @@ export function DomainsView() {
 
                           {/* Value Row */}
                           <div className="space-y-1">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase font-mono">Value / Target / Content:</span>
+                            <span className="text-[10px] font-bold text-zinc-700 uppercase font-mono">Value / Target / Content:</span>
                             <div className="flex items-center justify-between gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200/80 font-mono text-xs">
-                              <code className="text-zinc-800 break-all text-[11px] leading-relaxed">{rec.value}</code>
+                              <code className="text-zinc-800 break-all text-[11px] leading-relaxed font-mono">{rec.value}</code>
                               <button
                                 onClick={() => copyToClipboard(rec.value, `val-${i}`)}
-                                className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-950 font-sans font-medium px-2 py-0.5 bg-white border border-zinc-200 rounded shadow-2xs cursor-pointer transition-all shrink-0 ml-2"
+                                className="flex items-center gap-1 text-[11px] text-zinc-700 hover:text-zinc-950 font-sans font-medium px-2.5 py-1 bg-white border border-zinc-200 rounded-md shadow-2xs cursor-pointer transition-all shrink-0 ml-2"
                               >
-                                {copiedKey === `val-${i}` ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3 text-zinc-400" />}
+                                {copiedKey === `val-${i}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
                                 <span>{copiedKey === `val-${i}` ? "Copied" : "Copy Value"}</span>
                               </button>
                             </div>
