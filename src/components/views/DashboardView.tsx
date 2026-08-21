@@ -19,12 +19,14 @@ import {
   Layers,
   HardDrive,
   CheckCircle2,
-  ShieldCheck,
   Activity,
   Server,
   KeyRound,
   RotateCcw,
   Zap,
+  ShieldCheck,
+  Database,
+  Lock,
 } from "lucide-react";
 
 export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => void }) {
@@ -204,107 +206,162 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
         </div>
       </div>
 
-      {/* Main Mission Control Grid */}
+      {/* Main Mission Control Grid - Fills remaining height */}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left Column (2 Cols): Subsystem Daemon Health & Quick Action Deck */}
-        <div className="lg:col-span-2 flex flex-col space-y-4 min-h-0">
-          {/* Engine Services Card */}
-          <div className="flex-1 min-h-0 rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between">
-            <div>
-              <div className="px-5 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-                <div className="flex items-center gap-2">
-                  <Server className="w-4 h-4 text-zinc-700" />
-                  <h2 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider font-mono">
-                    Subsystem Daemon Matrix
-                  </h2>
+        {/* Left Column (2 Cols): Subsystem Daemon Matrix & Quick Actions */}
+        <div className="lg:col-span-2 rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between h-full min-h-0">
+          <div className="flex-1 flex flex-col justify-between min-h-0">
+            {/* Subsystem Header */}
+            <div className="shrink-0 px-5 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+              <div className="flex items-center gap-2">
+                <Server className="w-4 h-4 text-zinc-700" />
+                <h2 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider font-mono">
+                  Subsystem Daemon Matrix
+                </h2>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Cluster Nominal
+              </span>
+            </div>
+
+            {/* 6 Subsystems Grid - Generously sized */}
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs flex-1">
+              {/* Postfix */}
+              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="font-bold text-zinc-900 text-xs font-mono">Postfix MTA</span>
+                  </div>
+                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    LISTENING
+                  </span>
                 </div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-mono">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Cluster Nominal
-                </span>
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[11px] text-zinc-700 font-sans font-medium">SMTP :25 & :587</p>
+                  <p className="text-[10px] text-zinc-400 font-sans">Queue spool & relay transport</p>
+                </div>
               </div>
 
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
-                {/* Postfix */}
-                <div className="p-3 bg-zinc-50/70 border border-zinc-200/80 rounded-xl space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-zinc-900 text-xs">Postfix (MTA)</span>
-                    <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      LISTENING
-                    </span>
+              {/* Dovecot */}
+              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-blue-600 shrink-0" />
+                    <span className="font-bold text-zinc-900 text-xs font-mono">Dovecot IMAP</span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 font-sans">
-                    Port 25 (SMTP Inbound) & Port 587 (Submission)
-                  </p>
+                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    LISTENING
+                  </span>
                 </div>
-
-                {/* Dovecot */}
-                <div className="p-3 bg-zinc-50/70 border border-zinc-200/80 rounded-xl space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-zinc-900 text-xs">Dovecot (IMAP)</span>
-                    <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      LISTENING
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-zinc-500 font-sans">
-                    Port 143 (IMAP) & Port 993 (IMAPS / TLS)
-                  </p>
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[11px] text-zinc-700 font-sans font-medium">IMAP :143 & :993</p>
+                  <p className="text-[10px] text-zinc-400 font-sans">Maildir storage & SASL auth</p>
                 </div>
+              </div>
 
-                {/* OpenLDAP */}
-                <div className="p-3 bg-zinc-50/70 border border-zinc-200/80 rounded-xl space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-zinc-900 text-xs">OpenLDAP / AD</span>
-                    <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      CONNECTED
-                    </span>
+              {/* OpenLDAP */}
+              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <KeyRound className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <span className="font-bold text-zinc-900 text-xs font-mono">OpenLDAP / AD</span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 font-sans">
-                    Port 389 (StartTLS) Directory & RBAC mapping
-                  </p>
+                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    CONNECTED
+                  </span>
                 </div>
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[11px] text-zinc-700 font-sans font-medium">LDAP :389 (StartTLS)</p>
+                  <p className="text-[10px] text-zinc-400 font-sans">RBAC directory synchronization</p>
+                </div>
+              </div>
 
-                {/* OpenDKIM */}
-                <div className="p-3 bg-zinc-50/70 border border-zinc-200/80 rounded-xl space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-zinc-900 text-xs">OpenDKIM Milter</span>
-                    <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      ACTIVE
-                    </span>
+              {/* OpenDKIM */}
+              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-purple-600 shrink-0" />
+                    <span className="font-bold text-zinc-900 text-xs font-mono">OpenDKIM Milter</span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 font-sans">
-                    RSA-2048 Outbound Milter & Verification
-                  </p>
+                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    ACTIVE
+                  </span>
+                </div>
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[11px] text-zinc-700 font-sans font-medium">RSA 2048-bit Milter</p>
+                  <p className="text-[10px] text-zinc-400 font-sans">Cryptographic outbound signing</p>
+                </div>
+              </div>
+
+              {/* PostgreSQL */}
+              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4 text-cyan-600 shrink-0" />
+                    <span className="font-bold text-zinc-900 text-xs font-mono">PostgreSQL DB</span>
+                  </div>
+                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    READY
+                  </span>
+                </div>
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[11px] text-zinc-700 font-sans font-medium">Port 5433 (Schema v003)</p>
+                  <p className="text-[10px] text-zinc-400 font-sans">Virtual domain proxymap pool</p>
+                </div>
+              </div>
+
+              {/* TLS Provider */}
+              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="font-bold text-zinc-900 text-xs font-mono">TLS Security</span>
+                  </div>
+                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    ENFORCED
+                  </span>
+                </div>
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[11px] text-zinc-700 font-sans font-medium">Zero-Trust TLS 1.2/1.3</p>
+                  <p className="text-[10px] text-zinc-400 font-sans">Automated ACME & SNI certs</p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Action Shortcuts */}
-            <div className="p-3.5 bg-zinc-50/50 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-zinc-700 font-mono">Quick Dispatch:</span>
-              <div className="flex flex-wrap items-center gap-1.5 text-xs font-sans">
-                <button
-                  onClick={() => onNavigate("queue")}
-                  className="px-2.5 py-1 text-[11px] font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1"
-                >
-                  <Zap className="w-3 h-3 text-amber-600" />
-                  <span>Flush Queue</span>
-                </button>
-                <button
-                  onClick={() => onNavigate("identity")}
-                  className="px-2.5 py-1 text-[11px] font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1"
-                >
-                  <RotateCcw className="w-3 h-3 text-blue-600" />
-                  <span>Sync LDAP</span>
-                </button>
-                <button
-                  onClick={() => onNavigate("system")}
-                  className="px-2.5 py-1 text-[11px] font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1"
-                >
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  <span>System Doctor</span>
-                </button>
-              </div>
+            {/* Invariant Footer Strip */}
+            <div className="px-5 py-2.5 bg-zinc-50/50 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+              <span>Cluster Schema: v003_applied (PostgreSQL 16)</span>
+              <span>Zero-Trust Invariants Verified</span>
+            </div>
+          </div>
+
+          {/* Quick Action Shortcuts Deck */}
+          <div className="shrink-0 p-4 bg-zinc-50/70 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs font-semibold text-zinc-800 font-mono">Quick Dispatch:</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
+              <button
+                onClick={() => onNavigate("queue")}
+                className="px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1.5 transition-all"
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-600" />
+                <span>Flush Queue</span>
+              </button>
+              <button
+                onClick={() => onNavigate("identity")}
+                className="px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1.5 transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
+                <span>Sync LDAP</span>
+              </button>
+              <button
+                onClick={() => onNavigate("system")}
+                className="px-3 py-1.5 text-xs font-medium bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-zinc-800 shadow-2xs cursor-pointer flex items-center gap-1.5 transition-all"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>System Doctor</span>
+              </button>
             </div>
           </div>
         </div>
@@ -329,7 +386,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
 
           <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-zinc-100 text-xs font-mono">
             {auditLogs.length === 0 ? (
-              <div className="py-12 text-center text-zinc-400 text-xs">No recent activity</div>
+              <div className="py-12 text-center text-zinc-400 text-xs font-sans">No recent activity</div>
             ) : (
               auditLogs.map((log) => (
                 <div key={log.id} className="p-3 hover:bg-zinc-50/50 transition-colors space-y-1">
