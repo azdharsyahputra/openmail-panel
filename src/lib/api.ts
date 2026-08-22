@@ -37,6 +37,7 @@ export interface DNSRecord {
 
 export interface DomainDNSResponse {
   domain: string;
+  server_ip?: string;
   a?: DNSRecord;
   mx?: DNSRecord;
   spf?: DNSRecord;

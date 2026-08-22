@@ -42,6 +42,7 @@ export function DomainsView() {
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"dns" | "dkim" | "doctor">("dns");
   const [dnsData, setDnsData] = useState<DomainDNSResponse | null>(null);
+  const [customServerIP, setCustomServerIP] = useState<string>("");
   const [dkimKeys, setDkimKeys] = useState<DKIMKeyItem[]>([]);
   const [newSelector, setNewSelector] = useState("default");
   const [generatingDKIM, setGeneratingDKIM] = useState(false);
@@ -119,6 +120,7 @@ export function DomainsView() {
         api.getDomainDoctor(name).catch(() => null),
       ]);
       setDnsData(dns);
+      setCustomServerIP(dns?.server_ip || "");
       setDkimKeys(dkim);
       setDoctorReport(doc);
     } catch {
@@ -472,17 +474,33 @@ export function DomainsView() {
             <div className="flex-1 min-h-0 overflow-y-auto text-xs space-y-4 font-mono select-text">
               {activeTab === "dns" && (
                 <div className="space-y-4 font-sans">
-                  {/* Setup Guidance Banner */}
-                  <div className="p-3 bg-zinc-50 border border-zinc-200/80 rounded-xl space-y-1">
-                    <div className="font-semibold text-zinc-950 text-xs flex items-center gap-1.5">
-                      <span>DNS Registrar Setup Guide for</span>
-                      <code className="px-1.5 py-0.5 bg-white border border-zinc-200 rounded font-mono text-[11px] text-zinc-900">
-                        {selectedDomain}
-                      </code>
+                  {/* Setup Guidance Banner with Dynamic Server IP Input */}
+                  <div className="p-3.5 bg-zinc-50 border border-zinc-200/80 rounded-xl space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-zinc-950 text-xs flex items-center gap-1.5">
+                          <span>DNS Registrar Setup Guide for</span>
+                          <code className="px-1.5 py-0.5 bg-white border border-zinc-200 rounded font-mono text-[11px] text-zinc-900">
+                            {selectedDomain}
+                          </code>
+                        </div>
+                        <p className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">
+                          Copy these authoritative records into your domain management provider (e.g., Cloudflare, Namecheap, GoDaddy, Rumahweb).
+                        </p>
+                      </div>
+
+                      {/* Server IPv4 Customizer */}
+                      <div className="flex items-center gap-1.5 shrink-0 bg-white px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
+                        <label className="text-[11px] font-semibold text-zinc-700 whitespace-nowrap">Server IP:</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 157.20.254.39"
+                          value={customServerIP}
+                          onChange={(e) => setCustomServerIP(e.target.value)}
+                          className="w-32 px-1.5 py-0.5 text-xs bg-zinc-50 border border-zinc-200 rounded focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950 placeholder:text-zinc-400"
+                        />
+                      </div>
                     </div>
-                    <p className="text-[11px] text-zinc-500 leading-relaxed">
-                      Copy the following authoritative records into your domain management provider (e.g., Cloudflare, Namecheap, GoDaddy, Rumahweb). DNS propagation typically completes within 1–5 minutes.
-                    </p>
                   </div>
 
                   {dnsData ? (
@@ -506,18 +524,15 @@ export function DomainsView() {
                         return clean || "@";
                       };
 
+                      const currentIP = customServerIP.trim() || dnsData.server_ip || (dnsData.a?.value !== "<YOUR_SERVER_IPV4>" ? dnsData.a?.value : "");
+
                       const list: ExpandedRecord[] = [];
 
-                      // 1. A Record (Server IP)
-                      const aRecord = dnsData.a || {
-                        type: "A",
-                        host: "mail",
-                        value: "157.20.254.39",
-                      };
+                      // 1. A Record (Points mail.<domain> to Server IP)
                       list.push({
                         type: "A",
-                        host: normalizeHost(aRecord.host || "mail"),
-                        value: aRecord.value || "157.20.254.39",
+                        host: "mail",
+                        value: currentIP || "<YOUR_SERVER_IPV4>",
                         description: `Points mail.${selectedDomain} directly to your MailOpen server IP address.`,
                         note: "Enter 'mail' in Cloudflare/Registrar (Must be 'DNS Only' / unproxied).",
                       });
@@ -534,21 +549,18 @@ export function DomainsView() {
                         });
                       }
 
-                      // 3. SPF TXT Record (with IP4)
-                      if (dnsData.spf) {
-                        const h = normalizeHost(dnsData.spf.host || "@");
-                        let val = dnsData.spf.value;
-                        if (!val || val === "v=spf1 mx ~all") {
-                          val = `v=spf1 a mx ip4:${aRecord.value || "157.20.254.39"} ~all`;
-                        }
-                        list.push({
-                          type: "TXT (SPF)",
-                          host: h,
-                          value: val,
-                          description: `Authorizes MailOpen IP servers to send emails on behalf of ${selectedDomain} and prevents email spoofing.`,
-                          note: "Enter @ or leave blank as the Host Name.",
-                        });
+                      // 3. SPF TXT Record (dynamically adapts with ip4 if IP is present, or self-resolving a mx ~all if not)
+                      let spfVal = currentIP ? `v=spf1 a mx ip4:${currentIP} ~all` : (dnsData.spf?.value || `v=spf1 a mx ~all`);
+                      if (spfVal.includes("<YOUR_SERVER_IPV4>")) {
+                        spfVal = "v=spf1 a mx ~all";
                       }
+                      list.push({
+                        type: "TXT (SPF)",
+                        host: "@",
+                        value: spfVal,
+                        description: `Authorizes MailOpen IP servers to send emails on behalf of ${selectedDomain} and prevents email spoofing.`,
+                        note: "Enter @ or leave blank as the Host Name.",
+                      });
 
                       // 4. DMARC TXT Record (with quarantine & rua)
                       if (dnsData.dmarc) {
