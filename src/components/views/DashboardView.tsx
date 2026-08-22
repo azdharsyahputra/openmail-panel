@@ -46,7 +46,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
         api.getMailboxes().catch(() => []),
         api.getQueueSummary().catch(() => ({ active: 0, deferred: 0, hold: 0, corrupt: 0, total: 0 })),
         api.getAuditLogs().catch(() => []),
-        api.getReadyHealth().catch(() => ({ status: "ready" })),
+        api.getDeepHealth().catch(() => ({ status: "offline" })),
       ]);
       setDomains(doms);
       setMailboxes(mbs);
@@ -211,123 +211,219 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
         <div className="lg:col-span-2 rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-2xs flex flex-col justify-between h-full min-h-0">
           <div className="flex-1 flex flex-col min-h-0">
             {/* Subsystem Header */}
-            <div className="shrink-0 px-5 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-              <div className="flex items-center gap-2">
-                <Server className="w-4 h-4 text-zinc-800" />
-                <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
-                  Subsystem Daemon Matrix
-                </h2>
-              </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Cluster Nominal
-              </span>
-            </div>
+            {(() => {
+              const isNominal = Boolean(
+                health?.status &&
+                ["ok", "healthy", "live", "up"].includes(String(health.status).toLowerCase())
+              );
+              const postfixUp = health?.checks
+                ? health.checks.filter((c) => c.component.startsWith("postfix")).every((c) => c.status === "UP")
+                : true;
+              const dovecotUp = health?.checks
+                ? health.checks.filter((c) => c.component.startsWith("dovecot")).every((c) => c.status === "UP")
+                : true;
+              const pgUp = health?.checks
+                ? health.checks.find((c) => c.component === "postgresql")?.status === "UP"
+                : true;
+              const dkimUp = health?.checks
+                ? health.checks.find((c) => c.component === "dkim_keystore")?.status === "UP"
+                : true;
+              const tlsUp = health?.checks
+                ? health.checks.find((c) => c.component === "tls_keystore")?.status === "UP"
+                : true;
 
-            {/* 6 Subsystems Grid */}
-            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs flex-1">
-              {/* Postfix */}
-              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <Server className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-bold text-zinc-900 text-xs font-mono">Postfix MTA</span>
+              return (
+                <>
+                  <div className="shrink-0 px-5 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+                    <div className="flex items-center gap-2">
+                      <Server className="w-4 h-4 text-zinc-800" />
+                      <h2 className="text-xs font-semibold text-zinc-950 uppercase tracking-wider font-mono">
+                        Subsystem Daemon Matrix
+                      </h2>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium font-mono border ${
+                        isNominal
+                          ? "bg-emerald-500/10 text-emerald-800 border-emerald-500/20"
+                          : "bg-red-500/10 text-red-700 border-red-500/20"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          isNominal ? "bg-emerald-600 animate-pulse" : "bg-red-500"
+                        }`}
+                      />
+                      {isNominal ? "Cluster Nominal" : "Cluster Degraded"}
+                    </span>
                   </div>
-                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    LISTENING
-                  </span>
-                </div>
-                <div className="mt-2 space-y-0.5">
-                  <p className="text-[11px] text-zinc-700 font-sans font-medium">SMTP :25 & :587</p>
-                  <p className="text-[10px] text-zinc-400 font-sans">Queue spool & relay transport</p>
-                </div>
-              </div>
 
-              {/* Dovecot */}
-              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-bold text-zinc-900 text-xs font-mono">Dovecot IMAP</span>
-                  </div>
-                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    LISTENING
-                  </span>
-                </div>
-                <div className="mt-2 space-y-0.5">
-                  <p className="text-[11px] text-zinc-700 font-sans font-medium">IMAP :143 & :993</p>
-                  <p className="text-[10px] text-zinc-400 font-sans">Maildir storage & SASL auth</p>
-                </div>
-              </div>
+                  {/* 6 Subsystems Grid */}
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs flex-1">
+                    {/* Postfix */}
+                    <div
+                      className={`p-3.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                        postfixUp ? "bg-zinc-50/70 border-zinc-200/80" : "bg-red-50/30 border-red-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <Server
+                            className={`w-4 h-4 shrink-0 ${postfixUp ? "text-emerald-600" : "text-red-600"}`}
+                          />
+                          <span className="font-bold text-zinc-900 text-xs font-mono">Postfix MTA</span>
+                        </div>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                            postfixUp
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
+                          }`}
+                        >
+                          {postfixUp ? "LISTENING" : "DOWN"}
+                        </span>
+                      </div>
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-[11px] text-zinc-700 font-sans font-medium">SMTP :25 & :587</p>
+                        <p className="text-[10px] text-zinc-400 font-sans">Queue spool & relay transport</p>
+                      </div>
+                    </div>
 
-              {/* OpenLDAP */}
-              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <KeyRound className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-bold text-zinc-900 text-xs font-mono">OpenLDAP / AD</span>
-                  </div>
-                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    CONNECTED
-                  </span>
-                </div>
-                <div className="mt-2 space-y-0.5">
-                  <p className="text-[11px] text-zinc-700 font-sans font-medium">LDAP :389 (StartTLS)</p>
-                  <p className="text-[10px] text-zinc-400 font-sans">RBAC directory synchronization</p>
-                </div>
-              </div>
+                    {/* Dovecot */}
+                    <div
+                      className={`p-3.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                        dovecotUp ? "bg-zinc-50/70 border-zinc-200/80" : "bg-red-50/30 border-red-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <Mail
+                            className={`w-4 h-4 shrink-0 ${dovecotUp ? "text-emerald-600" : "text-red-600"}`}
+                          />
+                          <span className="font-bold text-zinc-900 text-xs font-mono">Dovecot IMAP</span>
+                        </div>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                            dovecotUp
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
+                          }`}
+                        >
+                          {dovecotUp ? "LISTENING" : "DOWN / REFUSED"}
+                        </span>
+                      </div>
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-[11px] text-zinc-700 font-sans font-medium">IMAP :143 & :993</p>
+                        <p className="text-[10px] text-zinc-400 font-sans">Maildir storage & SASL auth</p>
+                      </div>
+                    </div>
 
-              {/* OpenDKIM */}
-              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-bold text-zinc-900 text-xs font-mono">OpenDKIM Milter</span>
-                  </div>
-                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    ACTIVE
-                  </span>
-                </div>
-                <div className="mt-2 space-y-0.5">
-                  <p className="text-[11px] text-zinc-700 font-sans font-medium">RSA 2048-bit Milter</p>
-                  <p className="text-[10px] text-zinc-400 font-sans">Cryptographic outbound signing</p>
-                </div>
-              </div>
+                    {/* OpenLDAP */}
+                    <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <KeyRound className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span className="font-bold text-zinc-900 text-xs font-mono">OpenLDAP / AD</span>
+                        </div>
+                        <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          STANDBY
+                        </span>
+                      </div>
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-[11px] text-zinc-700 font-sans font-medium">LDAP :389 (StartTLS)</p>
+                        <p className="text-[10px] text-zinc-400 font-sans">RBAC directory synchronization</p>
+                      </div>
+                    </div>
 
-              {/* PostgreSQL */}
-              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <Database className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-bold text-zinc-900 text-xs font-mono">PostgreSQL DB</span>
-                  </div>
-                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    READY
-                  </span>
-                </div>
-                <div className="mt-2 space-y-0.5">
-                  <p className="text-[11px] text-zinc-700 font-sans font-medium">Port 5433 (Schema v003)</p>
-                  <p className="text-[10px] text-zinc-400 font-sans">Virtual domain proxymap pool</p>
-                </div>
-              </div>
+                    {/* OpenDKIM */}
+                    <div
+                      className={`p-3.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                        dkimUp ? "bg-zinc-50/70 border-zinc-200/80" : "bg-red-50/30 border-red-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck
+                            className={`w-4 h-4 shrink-0 ${dkimUp ? "text-emerald-600" : "text-red-600"}`}
+                          />
+                          <span className="font-bold text-zinc-900 text-xs font-mono">OpenDKIM Milter</span>
+                        </div>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                            dkimUp
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
+                          }`}
+                        >
+                          {dkimUp ? "ACTIVE" : "DOWN"}
+                        </span>
+                      </div>
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-[11px] text-zinc-700 font-sans font-medium">RSA 2048-bit Milter</p>
+                        <p className="text-[10px] text-zinc-400 font-sans">Cryptographic outbound signing</p>
+                      </div>
+                    </div>
 
-              {/* TLS Provider */}
-              <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex flex-col justify-between hover:border-zinc-300 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-bold text-zinc-900 text-xs font-mono">TLS Security</span>
+                    {/* PostgreSQL */}
+                    <div
+                      className={`p-3.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                        pgUp ? "bg-zinc-50/70 border-zinc-200/80" : "bg-red-50/30 border-red-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <Database
+                            className={`w-4 h-4 shrink-0 ${pgUp ? "text-emerald-600" : "text-red-600"}`}
+                          />
+                          <span className="font-bold text-zinc-900 text-xs font-mono">PostgreSQL DB</span>
+                        </div>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                            pgUp
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
+                          }`}
+                        >
+                          {pgUp ? "READY" : "OFFLINE"}
+                        </span>
+                      </div>
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-[11px] text-zinc-700 font-sans font-medium">Port 5433 (Schema v003)</p>
+                        <p className="text-[10px] text-zinc-400 font-sans">Virtual domain proxymap pool</p>
+                      </div>
+                    </div>
+
+                    {/* TLS Provider */}
+                    <div
+                      className={`p-3.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                        tlsUp ? "bg-zinc-50/70 border-zinc-200/80" : "bg-red-50/30 border-red-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <Lock
+                            className={`w-4 h-4 shrink-0 ${tlsUp ? "text-emerald-600" : "text-red-600"}`}
+                          />
+                          <span className="font-bold text-zinc-900 text-xs font-mono">TLS Security</span>
+                        </div>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                            tlsUp
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
+                          }`}
+                        >
+                          {tlsUp ? "ENFORCED" : "DEGRADED"}
+                        </span>
+                      </div>
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-[11px] text-zinc-700 font-sans font-medium">Zero-Trust TLS 1.2/1.3</p>
+                        <p className="text-[10px] text-zinc-400 font-sans">Automated ACME & SNI certs</p>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    ENFORCED
-                  </span>
-                </div>
-                <div className="mt-2 space-y-0.5">
-                  <p className="text-[11px] text-zinc-700 font-sans font-medium">Zero-Trust TLS 1.2/1.3</p>
-                  <p className="text-[10px] text-zinc-400 font-sans">Automated ACME & SNI certs</p>
-                </div>
-              </div>
-            </div>
+                </>
+              );
+            })()}
           </div>
 
           {/* Bottom Deck */}

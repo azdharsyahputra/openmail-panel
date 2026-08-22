@@ -128,8 +128,16 @@ export interface SyncReport {
   duration: number;
 }
 
+export interface HealthCheckItem {
+  component: string;
+  status: string;
+  message?: string;
+}
+
 export interface HealthReport {
   status: string;
+  timestamp?: string;
+  checks?: HealthCheckItem[];
   details?: Record<string, unknown>;
 }
 
