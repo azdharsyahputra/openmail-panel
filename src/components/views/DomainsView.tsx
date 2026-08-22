@@ -568,7 +568,8 @@ export function DomainsView() {
                       }
 
                       if (dnsData.dkim) {
-                        const h = normalizeHost(dnsData.dkim.host || "default._domainkey");
+                        const rawHost = dnsData.dkim.name || dnsData.dkim.host || "mail._domainkey";
+                        const h = normalizeHost(rawHost);
                         list.push({
                           type: "TXT",
                           host: h,
