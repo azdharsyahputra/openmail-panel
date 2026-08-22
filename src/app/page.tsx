@@ -75,7 +75,7 @@ export default function MainPage() {
 
   return (
     <div className="h-screen w-screen bg-[#f8fafc] flex flex-col overflow-hidden select-none">
-      <Navbar />
+      <Navbar onNavigate={setActiveTab} />
       <div className="flex-1 flex overflow-hidden px-5 py-4 gap-5 h-[calc(100vh-4rem)]">
         <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} />
         <main className="flex-1 h-full bg-white rounded-xl border border-zinc-200/80 shadow-2xs p-6 md:p-8 overflow-y-auto select-text">
