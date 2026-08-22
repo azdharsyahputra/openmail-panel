@@ -13,6 +13,7 @@ import { QueueView } from "@/components/views/QueueView";
 import { SecurityView } from "@/components/views/SecurityView";
 import { MonitoringView } from "@/components/views/MonitoringView";
 import { SystemView } from "@/components/views/SystemView";
+import { ConfigurationsView } from "@/components/views/ConfigurationsView";
 
 const VALID_TABS: NavTab[] = [
   "dashboard",
@@ -23,6 +24,7 @@ const VALID_TABS: NavTab[] = [
   "security",
   "monitoring",
   "system",
+  "configurations",
 ];
 
 export default function MainPage() {
@@ -87,6 +89,7 @@ export default function MainPage() {
           {activeTab === "security" && <SecurityView />}
           {activeTab === "monitoring" && <MonitoringView />}
           {activeTab === "system" && <SystemView />}
+          {activeTab === "configurations" && <ConfigurationsView />}
         </main>
       </div>
     </div>

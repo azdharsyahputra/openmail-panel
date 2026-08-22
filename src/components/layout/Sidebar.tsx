@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Activity,
   Server,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export type NavTab =
@@ -20,7 +21,8 @@ export type NavTab =
   | "queue"
   | "security"
   | "monitoring"
-  | "system";
+  | "system"
+  | "configurations";
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -49,10 +51,11 @@ export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
       ],
     },
     {
-      title: "Operations",
+      title: "Operations & Admin",
       items: [
         { id: "monitoring", label: "Telemetry & Logs", icon: Activity },
         { id: "system", label: "System Diagnostics", icon: Server },
+        { id: "configurations", label: "Configurations", icon: SlidersHorizontal },
       ],
     },
   ];

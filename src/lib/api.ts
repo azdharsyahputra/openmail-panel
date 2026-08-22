@@ -153,6 +153,16 @@ export interface SystemDoctorReport {
   categories: Record<string, DoctorCategory>;
 }
 
+export interface SystemSettingItem {
+  key: string;
+  value: string;
+  category: string;
+  description: string;
+  updated_at: string;
+}
+
+export type SystemSettingsMap = Record<string, SystemSettingItem>;
+
 const API_BASE = "";
 
 class ApiClient {
@@ -553,6 +563,20 @@ class ApiClient {
         created_at: String(l.created_at || new Date().toISOString()),
       };
     });
+  }
+
+  // System Settings & Configurations
+  public async getSystemConfig(): Promise<SystemSettingsMap> {
+    const res = await this.request<{ settings: SystemSettingsMap }>("/api/v1/config");
+    return res.settings || {};
+  }
+
+  public async updateSystemConfig(settings: Record<string, string>): Promise<SystemSettingsMap> {
+    const res = await this.request<{ settings: SystemSettingsMap }>("/api/v1/config", {
+      method: "PUT",
+      body: JSON.stringify({ settings }),
+    });
+    return res.settings || {};
   }
 }
 

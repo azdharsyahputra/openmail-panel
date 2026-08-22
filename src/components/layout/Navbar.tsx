@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Activity,
   Server,
+  SlidersHorizontal,
   X,
   ArrowRight,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const NAV_ITEMS: { id: NavTab; label: string; group: string; icon: React.Compone
   { id: "security", label: "Security & TLS Doctor", group: "Operations", icon: ShieldCheck },
   { id: "monitoring", label: "Telemetry & Logs", group: "Operations", icon: Activity },
   { id: "system", label: "System Diagnostics", group: "Operations", icon: Server },
+  { id: "configurations", label: "Server Configurations", group: "Operations", icon: SlidersHorizontal },
 ];
 
 export function Navbar({ onNavigate }: { onNavigate?: (tab: NavTab) => void }) {
