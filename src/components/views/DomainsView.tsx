@@ -509,6 +509,7 @@ export function DomainsView() {
                         type: string;
                         host: string;
                         value: string;
+                        priority?: number;
                         description: string;
                         note?: string;
                       }
@@ -534,18 +535,20 @@ export function DomainsView() {
                         host: "mail",
                         value: currentIP || "<YOUR_SERVER_IPV4>",
                         description: `Points mail.${selectedDomain} directly to your MailOpen server IP address.`,
-                        note: "Enter 'mail' in Cloudflare/Registrar (Must be 'DNS Only' / unproxied).",
+                        note: "Enter 'mail' as Name in Cloudflare/Registrar (Must be 'DNS Only' / unproxied).",
                       });
 
                       // 2. MX Record
                       if (dnsData.mx) {
                         const h = normalizeHost(dnsData.mx.host || "@");
+                        const mxHost = dnsData.mx.value || `mail.${selectedDomain}`;
                         list.push({
                           type: "MX",
                           host: h,
-                          value: `${dnsData.mx.priority || 10} ${dnsData.mx.value}`,
+                          priority: dnsData.mx.priority || 10,
+                          value: mxHost,
                           description: `Directs incoming emails for @${selectedDomain} to the MailOpen mail exchange server.`,
-                          note: h === "@" ? "Enter @ or leave blank in your DNS provider." : `Enter '${h}' in your DNS provider.`,
+                          note: `Name: '${h}' (or root domain). Mail Server: '${mxHost}', Priority: 10.`,
                         });
                       }
 
@@ -639,9 +642,28 @@ export function DomainsView() {
                             </div>
                           </div>
 
+                          {/* Priority Row (for MX) */}
+                          {rec.priority !== undefined && (
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-bold text-zinc-700 uppercase font-mono">Priority:</span>
+                              <div className="flex items-center justify-between gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200/80 font-mono text-xs">
+                                <code className="text-zinc-950 font-bold text-xs">{rec.priority}</code>
+                                <button
+                                  onClick={() => copyToClipboard(String(rec.priority), `pri-${i}`)}
+                                  className="flex items-center gap-1 text-[11px] text-zinc-700 hover:text-zinc-950 font-sans font-medium px-2.5 py-1 bg-white border border-zinc-200 rounded-md shadow-2xs cursor-pointer transition-all shrink-0 ml-2"
+                                >
+                                  {copiedKey === `pri-${i}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
+                                  <span>{copiedKey === `pri-${i}` ? "Copied" : "Copy Priority"}</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Value Row */}
                           <div className="space-y-1">
-                            <span className="text-[10px] font-bold text-zinc-700 uppercase font-mono">Value / Target / Content:</span>
+                            <span className="text-[10px] font-bold text-zinc-700 uppercase font-mono">
+                              {rec.type === "MX" ? "Mail Server / Target:" : "Value / Target / Content:"}
+                            </span>
                             <div className="flex items-center justify-between gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200/80 font-mono text-xs">
                               <code className="text-zinc-800 break-all text-[11px] leading-relaxed font-mono">{rec.value}</code>
                               <button
