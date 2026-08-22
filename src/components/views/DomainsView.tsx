@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { api, DomainItem, DomainDNSResponse, DKIMKeyItem } from "@/lib/api";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import {
@@ -155,11 +156,15 @@ export function DomainsView() {
     }
   };
 
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(id);
-    toast.info("Copied to Clipboard", text);
-    setTimeout(() => setCopiedKey(null), 1500);
+  const copyToClipboard = async (text: string, id: string) => {
+    const ok = await copyTextToClipboard(text);
+    if (ok) {
+      setCopiedKey(id);
+      toast.info("Copied to Clipboard", text);
+      setTimeout(() => setCopiedKey(null), 1500);
+    } else {
+      toast.error("Copy Failed", "Could not copy text to clipboard.");
+    }
   };
 
   const formatDate = (isoString?: string) => {

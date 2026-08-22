@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { useToast } from "@/components/ui/Toast";
 import {
   Save,
@@ -81,11 +82,15 @@ export function ConfigurationsView() {
     static_configs:
       - targets: ['${settings.public_ip_override || "localhost"}:8085']`;
 
-  const copyPrometheusConfig = () => {
-    navigator.clipboard.writeText(prometheusSnippet);
-    setCopiedYAML(true);
-    toast.success("Copied to Clipboard", "Prometheus YAML scrape configuration copied.");
-    setTimeout(() => setCopiedYAML(false), 2000);
+  const copyPrometheusConfig = async () => {
+    const ok = await copyTextToClipboard(prometheusSnippet);
+    if (ok) {
+      setCopiedYAML(true);
+      toast.success("Copied to Clipboard", "Prometheus YAML scrape configuration copied.");
+      setTimeout(() => setCopiedYAML(false), 2000);
+    } else {
+      toast.error("Copy Failed", "Could not copy text to clipboard.");
+    }
   };
 
   return (
