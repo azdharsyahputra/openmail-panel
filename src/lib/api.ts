@@ -289,7 +289,14 @@ class ApiClient {
   }
 
   public async getDeepHealth(): Promise<HealthReport> {
-    return this.request<HealthReport>("/health/deep");
+    try {
+      const res = await fetch(`${API_BASE}/health/deep`, {
+        headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+      });
+      return await res.json();
+    } catch {
+      return { status: "offline" };
+    }
   }
 
   public async getSystemDoctor(): Promise<SystemDoctorReport> {

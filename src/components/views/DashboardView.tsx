@@ -216,21 +216,21 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
                 health?.status &&
                 ["ok", "healthy", "live", "up"].includes(String(health.status).toLowerCase())
               );
-              const postfixUp = health?.checks
-                ? health.checks.filter((c) => c.component.startsWith("postfix")).every((c) => c.status === "UP")
-                : true;
-              const dovecotUp = health?.checks
-                ? health.checks.filter((c) => c.component.startsWith("dovecot")).every((c) => c.status === "UP")
-                : true;
-              const pgUp = health?.checks
-                ? health.checks.find((c) => c.component === "postgresql")?.status === "UP"
-                : true;
-              const dkimUp = health?.checks
-                ? health.checks.find((c) => c.component === "dkim_keystore")?.status === "UP"
-                : true;
-              const tlsUp = health?.checks
-                ? health.checks.find((c) => c.component === "tls_keystore")?.status === "UP"
-                : true;
+
+              const dovecotChecks = health?.checks?.filter((c) => c.component.startsWith("dovecot")) || [];
+              const dovecotUp = dovecotChecks.length > 0 ? dovecotChecks.every((c) => c.status === "UP") : isNominal;
+
+              const postfixChecks = health?.checks?.filter((c) => c.component.startsWith("postfix")) || [];
+              const postfixUp = postfixChecks.length > 0 ? postfixChecks.every((c) => c.status === "UP") : isNominal;
+
+              const pgCheck = health?.checks?.find((c) => c.component === "postgresql");
+              const pgUp = pgCheck ? pgCheck.status === "UP" : isNominal;
+
+              const dkimCheck = health?.checks?.find((c) => c.component === "dkim_keystore");
+              const dkimUp = dkimCheck ? dkimCheck.status === "UP" : isNominal;
+
+              const tlsCheck = health?.checks?.find((c) => c.component === "tls_keystore");
+              const tlsUp = tlsCheck ? tlsCheck.status === "UP" : isNominal;
 
               return (
                 <>
