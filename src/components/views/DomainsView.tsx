@@ -510,8 +510,8 @@ export function DomainsView() {
                         host: string;
                         value: string;
                         priority?: number;
+                        proxyStatus?: string;
                         description: string;
-                        note?: string;
                       }
 
                       const normalizeHost = (rawHost: string) => {
@@ -534,8 +534,8 @@ export function DomainsView() {
                         type: "A",
                         host: "mail",
                         value: currentIP || "<YOUR_SERVER_IPV4>",
-                        description: `Points mail.${selectedDomain} directly to your MailOpen server IP address.`,
-                        note: "Enter 'mail' as Name in Cloudflare/Registrar (Must be 'DNS Only' / unproxied).",
+                        proxyStatus: "DNS only",
+                        description: `Points mail.${selectedDomain} to MailOpen server IPv4`,
                       });
 
                       // 2. MX Record
@@ -547,25 +547,23 @@ export function DomainsView() {
                           host: h,
                           priority: dnsData.mx.priority || 10,
                           value: mxHost,
-                          description: `Directs incoming emails for @${selectedDomain} to the MailOpen mail exchange server.`,
-                          note: `Name: '${h}' (or root domain). Mail Server: '${mxHost}', Priority: 10.`,
+                          description: `Directs incoming email to mail.${selectedDomain}`,
                         });
                       }
 
-                      // 3. SPF TXT Record (dynamically adapts with ip4 if IP is present, or self-resolving a mx ~all if not)
+                      // 3. SPF TXT Record
                       let spfVal = currentIP ? `v=spf1 a mx ip4:${currentIP} ~all` : (dnsData.spf?.value || `v=spf1 a mx ~all`);
                       if (spfVal.includes("<YOUR_SERVER_IPV4>")) {
                         spfVal = "v=spf1 a mx ~all";
                       }
                       list.push({
-                        type: "TXT (SPF)",
+                        type: "TXT",
                         host: "@",
                         value: spfVal,
-                        description: `Authorizes MailOpen IP servers to send emails on behalf of ${selectedDomain} and prevents email spoofing.`,
-                        note: "Enter @ or leave blank as the Host Name.",
+                        description: `SPF authentication policy for ${selectedDomain}`,
                       });
 
-                      // 4. DMARC TXT Record (with quarantine & rua)
+                      // 4. DMARC TXT Record
                       if (dnsData.dmarc) {
                         const h = normalizeHost(dnsData.dmarc.host || "_dmarc");
                         let val = dnsData.dmarc.value;
@@ -573,22 +571,20 @@ export function DomainsView() {
                           val = `v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@${selectedDomain}`;
                         }
                         list.push({
-                          type: "TXT (DMARC)",
+                          type: "TXT",
                           host: h,
                           value: val,
-                          description: `Enforces RFC 7489 policy alignment and requests aggregate delivery reports for unauthenticated emails.`,
-                          note: `Enter '${h}' into Cloudflare / GoDaddy / Namecheap (do NOT add .${selectedDomain} suffix).`,
+                          description: `DMARC quarantine & reporting policy`,
                         });
                       }
 
                       if (dnsData.dkim) {
                         const h = normalizeHost(dnsData.dkim.host || "default._domainkey");
                         list.push({
-                          type: "TXT (DKIM)",
+                          type: "TXT",
                           host: h,
                           value: dnsData.dkim.value,
-                          description: `Cryptographic 2048-bit RSA public key used by inbox providers (Gmail, Outlook) to verify outbound header integrity.`,
-                          note: `Enter '${h}' as the Name / Host in your DNS panel.`,
+                          description: `DKIM 2048-bit RSA cryptographic signature`,
                         });
                       }
 
@@ -600,7 +596,7 @@ export function DomainsView() {
                             type: r.type || "TXT",
                             host: h,
                             value: r.value,
-                            description: "Authoritative DNS record for domain operations.",
+                            description: "Authoritative DNS record for domain operations",
                           });
                         });
                       }
@@ -611,7 +607,7 @@ export function DomainsView() {
 
                       return list.map((rec, i) => (
                         <div key={i} className="p-4 bg-white rounded-xl border border-zinc-200/80 space-y-3 shadow-2xs">
-                          {/* Title & Type & TTL */}
+                          {/* Title & Type & Badges */}
                           <div className="flex flex-wrap items-center justify-between gap-2 font-mono border-b border-zinc-100 pb-2">
                             <div className="flex items-center gap-2">
                               <span className="px-2 py-0.5 text-[10px] font-bold bg-zinc-950 text-white rounded uppercase">
@@ -619,17 +615,21 @@ export function DomainsView() {
                               </span>
                               <span className="text-[11px] font-semibold text-zinc-800">{rec.description}</span>
                             </div>
-                            <span className="px-2.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full">
-                              TTL: Auto (3600s / 1 Hour)
-                            </span>
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                              {rec.proxyStatus && (
+                                <span className="px-2 py-0.5 font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200 rounded">
+                                  Proxy: {rec.proxyStatus}
+                                </span>
+                              )}
+                              <span className="px-2 py-0.5 font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200 rounded">
+                                TTL: Auto
+                              </span>
+                            </div>
                           </div>
 
-                          {/* Host Row */}
+                          {/* Name / Host Row */}
                           <div className="space-y-1">
-                            <div className="flex justify-between items-center text-[10px] font-mono">
-                              <span className="font-bold text-zinc-700 uppercase">Name / Host / Subdomain:</span>
-                              {rec.note && <span className="text-zinc-500 font-sans italic">{rec.note}</span>}
-                            </div>
+                            <span className="text-[10px] font-bold text-zinc-600 uppercase font-mono">Name:</span>
                             <div className="flex items-center justify-between gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200/80 font-mono text-xs">
                               <code className="text-zinc-950 font-bold text-xs">{rec.host}</code>
                               <button
@@ -637,7 +637,7 @@ export function DomainsView() {
                                 className="flex items-center gap-1 text-[11px] text-zinc-700 hover:text-zinc-950 font-sans font-medium px-2.5 py-1 bg-white border border-zinc-200 rounded-md shadow-2xs cursor-pointer transition-all shrink-0"
                               >
                                 {copiedKey === `host-${i}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
-                                <span>{copiedKey === `host-${i}` ? "Copied" : "Copy Host"}</span>
+                                <span>{copiedKey === `host-${i}` ? "Copied" : "Copy Name"}</span>
                               </button>
                             </div>
                           </div>
@@ -645,7 +645,7 @@ export function DomainsView() {
                           {/* Priority Row (for MX) */}
                           {rec.priority !== undefined && (
                             <div className="space-y-1">
-                              <span className="text-[10px] font-bold text-zinc-700 uppercase font-mono">Priority:</span>
+                              <span className="text-[10px] font-bold text-zinc-600 uppercase font-mono">Priority:</span>
                               <div className="flex items-center justify-between gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200/80 font-mono text-xs">
                                 <code className="text-zinc-950 font-bold text-xs">{rec.priority}</code>
                                 <button
@@ -659,10 +659,10 @@ export function DomainsView() {
                             </div>
                           )}
 
-                          {/* Value Row */}
+                          {/* Content / Value Row */}
                           <div className="space-y-1">
-                            <span className="text-[10px] font-bold text-zinc-700 uppercase font-mono">
-                              {rec.type === "MX" ? "Mail Server / Target:" : "Value / Target / Content:"}
+                            <span className="text-[10px] font-bold text-zinc-600 uppercase font-mono">
+                              {rec.type === "MX" ? "Mail Server / Content:" : "Content:"}
                             </span>
                             <div className="flex items-center justify-between gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200/80 font-mono text-xs">
                               <code className="text-zinc-800 break-all text-[11px] leading-relaxed font-mono">{rec.value}</code>
@@ -671,7 +671,7 @@ export function DomainsView() {
                                 className="flex items-center gap-1 text-[11px] text-zinc-700 hover:text-zinc-950 font-sans font-medium px-2.5 py-1 bg-white border border-zinc-200 rounded-md shadow-2xs cursor-pointer transition-all shrink-0 ml-2"
                               >
                                 {copiedKey === `val-${i}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-zinc-400" />}
-                                <span>{copiedKey === `val-${i}` ? "Copied" : "Copy Value"}</span>
+                                <span>{copiedKey === `val-${i}` ? "Copied" : "Copy Content"}</span>
                               </button>
                             </div>
                           </div>
