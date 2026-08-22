@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 
 export type NavTab =
-  | "webmail"
   | "dashboard"
   | "domains"
   | "mailboxes"
@@ -31,46 +30,35 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, onSelectTab }: SidebarProps) {
-  const { hasRole } = useAuth();
-  const isAdmin = hasRole("admin", "operator");
-
   const navSections: {
     title: string;
     items: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[];
-  }[] = isAdmin
-    ? [
-        {
-          title: "Mail & Communication",
-          items: [
-            { id: "webmail", label: "Webmail / Inbox", icon: Mail },
-            { id: "dashboard", label: "Overview", icon: LayoutDashboard },
-            { id: "domains", label: "Domains & DNS", icon: Globe },
-            { id: "mailboxes", label: "Mailboxes & Aliases", icon: Inbox },
-          ],
-        },
-        {
-          title: "Control Plane",
-          items: [
-            { id: "identity", label: "Identity & LDAP", icon: Users },
-            { id: "queue", label: "Mail Queue", icon: Layers },
-            { id: "security", label: "Security Doctor", icon: ShieldCheck },
-          ],
-        },
-        {
-          title: "Operations & Admin",
-          items: [
-            { id: "monitoring", label: "Telemetry & Logs", icon: Activity },
-            { id: "system", label: "System Diagnostics", icon: Server },
-            { id: "configurations", label: "Configurations", icon: SlidersHorizontal },
-          ],
-        },
-      ]
-    : [
-        {
-          title: "Mailbox Portal",
-          items: [{ id: "webmail", label: "Webmail / Inbox", icon: Mail }],
-        },
-      ];
+  }[] = [
+    {
+      title: "Core Infrastructure",
+      items: [
+        { id: "dashboard", label: "Overview", icon: LayoutDashboard },
+        { id: "domains", label: "Domains & DNS", icon: Globe },
+        { id: "mailboxes", label: "Mailboxes & Aliases", icon: Inbox },
+      ],
+    },
+    {
+      title: "Control Plane",
+      items: [
+        { id: "identity", label: "Identity & LDAP", icon: Users },
+        { id: "queue", label: "Mail Queue", icon: Layers },
+        { id: "security", label: "Security Doctor", icon: ShieldCheck },
+      ],
+    },
+    {
+      title: "Operations & Admin",
+      items: [
+        { id: "monitoring", label: "Telemetry & Logs", icon: Activity },
+        { id: "system", label: "System Diagnostics", icon: Server },
+        { id: "configurations", label: "Configurations", icon: SlidersHorizontal },
+      ],
+    },
+  ];
 
   return (
     <aside className="w-64 h-full pb-2 flex flex-col justify-between select-none shrink-0 overflow-y-auto pr-1.5">
