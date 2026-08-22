@@ -81,48 +81,7 @@ export default function MainPage() {
 
   // 1. NON-ADMIN USER PORTAL (Dedicated Webmail Client)
   if (!isAdmin) {
-    return (
-      <div className="h-screen w-screen bg-[#f8fafc] flex flex-col overflow-hidden select-none">
-        {/* User Dedicated Header */}
-        <header className="h-14 shrink-0 bg-white border-b border-zinc-200/80 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-zinc-950 flex items-center justify-center text-white shadow-xs">
-              <Mail className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-zinc-950 tracking-tight flex items-center gap-1.5">
-                <span>MailOpen</span>
-                <span className="px-1.5 py-0.2 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[10px] font-bold uppercase">
-                  Webmail
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 font-sans text-xs">
-            <div className="flex items-center gap-2 px-3 py-1 bg-zinc-50 border border-zinc-200/80 rounded-xl">
-              <div className="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[10px] font-bold">
-                {(user.display_name || user.email || "U")[0].toUpperCase()}
-              </div>
-              <span className="font-semibold text-zinc-800">{user.email}</span>
-            </div>
-
-            <button
-              onClick={() => logout()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-700 font-medium cursor-pointer transition-all shadow-2xs"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </header>
-
-        {/* User Webmail Workspace */}
-        <div className="flex-1 p-4 overflow-hidden">
-          <WebmailView />
-        </div>
-      </div>
-    );
+    return <WebmailView user={user} onLogout={logout} />;
   }
 
   // 2. ADMIN CONTROL PLANE (Dedicated Server Infrastructure Management)

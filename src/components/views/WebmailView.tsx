@@ -7,6 +7,7 @@ import {
   WebmailMessageSummary,
   WebmailMessageDetail,
   SendWebmailRequest,
+  UserProfile,
 } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -20,24 +21,27 @@ import {
   RefreshCw,
   Search,
   Paperclip,
-  Star,
   CornerUpLeft,
   CornerUpRight,
   ReplyAll,
   Mail,
   MailOpen,
-  Check,
   ChevronLeft,
   ChevronRight,
   Download,
   X,
-  Plus,
   ArrowLeft,
-  Clock,
+  LogOut,
   User,
+  HardDrive,
 } from "lucide-react";
 
-export function WebmailView() {
+interface WebmailViewProps {
+  user?: UserProfile | null;
+  onLogout?: () => void;
+}
+
+export function WebmailView({ user, onLogout }: WebmailViewProps) {
   const toast = useToast();
   const [folders, setFolders] = useState<WebmailFolder[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string>("inbox");
@@ -50,7 +54,7 @@ export function WebmailView() {
   const [loadingFolders, setLoadingFolders] = useState<boolean>(true);
   const [loadingMessages, setLoadingMessages] = useState<boolean>(false);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [userEmail, setUserEmail] = useState<string>(user?.email || "");
 
   // Compose State
   const [isComposeOpen, setIsComposeOpen] = useState<boolean>(false);
@@ -71,7 +75,7 @@ export function WebmailView() {
       setLoadingFolders(true);
       const res = await api.getWebmailFolders();
       setFolders(res.folders || []);
-      setUserEmail(res.email || "");
+      if (res.email) setUserEmail(res.email);
     } catch (err: unknown) {
       toast.error("Failed to load folders", err instanceof Error ? err.message : "Error fetching webmail folders");
     } finally {
@@ -184,7 +188,7 @@ export function WebmailView() {
       bcc: bccList.length > 0 ? bccList : undefined,
       subject: composeSubject.trim() || "(No Subject)",
       body_text: composeBody,
-      body_html: `<div style="font-family: sans-serif; font-size: 14px; line-height: 1.5; color: #111;">${escapeHTML(
+      body_html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #18181b;">${escapeHTML(
         composeBody
       ).replace(/\n/g, "<br/>")}</div>`,
       attachments: composeAttachments.map((a) => ({
@@ -342,27 +346,90 @@ export function WebmailView() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-white border border-zinc-200/80 rounded-2xl shadow-xs">
-      {/* 1. Left Folder Sidebar */}
-      <div className="w-64 shrink-0 bg-zinc-50/70 border-r border-zinc-200/80 flex flex-col justify-between">
-        <div className="p-4 space-y-4">
-          {/* Compose Button */}
-          <button
-            onClick={() => {
-              resetCompose();
-              setIsComposeOpen(true);
-            }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer"
-          >
-            <PenSquare className="w-4 h-4" />
-            <span>New Message</span>
-          </button>
+    <div className="h-screen w-screen flex flex-col bg-zinc-100 overflow-hidden select-none font-sans">
+      {/* 1. TOP NAVBAR (Clean, Dedicated for Webmail User) */}
+      <header className="h-14 shrink-0 bg-white border-b border-zinc-200/80 px-5 flex items-center justify-between shadow-2xs z-10">
+        {/* Brand */}
+        <div className="flex items-center gap-3 w-64 shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-zinc-950 flex items-center justify-center text-white shadow-xs">
+            <Mail className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-sm font-bold text-zinc-950 tracking-tight flex items-center gap-1.5">
+              <span>MailOpen</span>
+              <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[10px] font-bold uppercase font-mono">
+                Webmail
+              </span>
+            </div>
+          </div>
+        </div>
 
-          {/* Folder Navigation */}
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono px-3">
-              Mailbox Folders
-            </span>
+        {/* Global Search Bar */}
+        <div className="flex-1 max-w-xl px-4">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Search emails by sender, subject, or message text..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-9 py-1.5 text-xs bg-zinc-100/80 hover:bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-300 rounded-xl outline-none transition-all placeholder:text-zinc-400 font-sans"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 text-xs cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* User Profile & Sign Out */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 px-3 py-1 bg-zinc-50 border border-zinc-200/80 rounded-xl">
+            <div className="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[10px] font-bold">
+              {(user?.display_name || userEmail || "U")[0].toUpperCase()}
+            </div>
+            <div className="text-left font-sans">
+              <div className="text-xs font-semibold text-zinc-800 truncate max-w-[180px]">
+                {userEmail}
+              </div>
+            </div>
+          </div>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium cursor-pointer transition-all shadow-2xs"
+              title="Sign Out of Mailbox"
+            >
+              <LogOut className="w-3.5 h-3.5 text-zinc-500" />
+              <span>Sign Out</span>
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* 2. MAIN 3-PANE WORKSPACE */}
+      <div className="flex-1 flex overflow-hidden p-3 gap-3">
+        {/* PANE 1: Folder Sidebar (240px) */}
+        <div className="w-56 shrink-0 bg-white border border-zinc-200/80 rounded-2xl flex flex-col justify-between overflow-hidden shadow-xs">
+          <div className="p-3.5 space-y-3">
+            {/* New Message Primary Button */}
+            <button
+              onClick={() => {
+                resetCompose();
+                setIsComposeOpen(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            >
+              <PenSquare className="w-4 h-4" />
+              <span>New Message</span>
+            </button>
+
+            {/* Folder Navigation */}
             <nav className="space-y-0.5 pt-1">
               {folders.map((f) => {
                 const isActive = currentFolder.toLowerCase() === f.id.toLowerCase();
@@ -377,8 +444,8 @@ export function WebmailView() {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                       isActive
-                        ? "bg-zinc-900 text-white shadow-2xs font-semibold"
-                        : "text-zinc-700 hover:bg-zinc-200/60"
+                        ? "bg-zinc-950 text-white shadow-2xs font-semibold"
+                        : "text-zinc-700 hover:bg-zinc-100"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
@@ -401,19 +468,12 @@ export function WebmailView() {
               })}
             </nav>
           </div>
-        </div>
 
-        {/* Account Info Footer */}
-        <div className="p-4 border-t border-zinc-200/80 bg-zinc-50">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-xs text-zinc-700">
-              <User className="w-4 h-4 text-zinc-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-zinc-900 truncate">
-                {userEmail.split("@")[0] || "User"}
-              </div>
-              <div className="text-[11px] text-zinc-500 truncate font-mono">{userEmail}</div>
+          {/* Mailbox Quota Footer */}
+          <div className="p-3.5 border-t border-zinc-100 bg-zinc-50/60 flex items-center justify-between text-xs text-zinc-500">
+            <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-600">
+              <HardDrive className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Storage: Healthy</span>
             </div>
             <button
               onClick={() => {
@@ -421,45 +481,25 @@ export function WebmailView() {
                 loadMessages();
               }}
               title="Refresh Mailbox"
-              className="p-1.5 text-zinc-400 hover:text-zinc-800 rounded-lg hover:bg-zinc-200/60 cursor-pointer transition-all"
+              className="p-1.5 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-200/60 rounded-lg cursor-pointer transition-all"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loadingMessages ? "animate-spin text-zinc-900" : ""}`} />
             </button>
           </div>
         </div>
-      </div>
 
-      {/* 2. Middle Message List Column */}
-      <div className={`w-96 shrink-0 border-r border-zinc-200/80 flex flex-col bg-white ${selectedMessageId ? "hidden md:flex" : "flex w-full md:w-96"}`}>
-        {/* Search Header */}
-        <div className="p-3 border-b border-zinc-200/80 space-y-2">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Search sender, subject, content..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-zinc-100/80 border border-transparent focus:border-zinc-300 focus:bg-white rounded-xl outline-none transition-all placeholder:text-zinc-400"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 text-xs"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center justify-between text-[11px] text-zinc-500 font-mono px-1">
-            <span>
-              {totalMessages} {totalMessages === 1 ? "email" : "emails"}
+        {/* PANE 2: Message List Column (360px) */}
+        <div className={`w-96 shrink-0 bg-white border border-zinc-200/80 rounded-2xl flex flex-col overflow-hidden shadow-xs ${selectedMessageId ? "hidden lg:flex" : "flex w-full lg:w-96"}`}>
+          {/* Header & Pagination */}
+          <div className="p-3.5 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/40">
+            <span className="text-xs font-bold text-zinc-900 capitalize">
+              {currentFolder} ({totalMessages})
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="p-1 rounded hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                className="p-1 rounded hover:bg-zinc-200 disabled:opacity-30 cursor-pointer"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
@@ -467,240 +507,240 @@ export function WebmailView() {
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page * 25 >= totalMessages}
-                className="p-1 rounded hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                className="p-1 rounded hover:bg-zinc-200 disabled:opacity-30 cursor-pointer"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
+
+          {/* Message List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+            {loadingMessages ? (
+              <div className="p-8 text-center text-xs text-zinc-400 font-mono space-y-2">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-400" />
+                <span>Loading messages...</span>
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="p-12 text-center text-xs text-zinc-400 font-sans space-y-2">
+                <Inbox className="w-8 h-8 mx-auto text-zinc-300 stroke-1" />
+                <p className="font-semibold text-zinc-600">No emails in {currentFolder}</p>
+                <p className="text-[11px] text-zinc-400">Incoming emails will appear here automatically.</p>
+              </div>
+            ) : (
+              messages.map((m) => {
+                const isSelected = selectedMessageId === m.id;
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => handleSelectMessage(m.id)}
+                    className={`p-3.5 transition-all cursor-pointer relative flex gap-3 select-none ${
+                      isSelected
+                        ? "bg-zinc-100/90 border-l-4 border-zinc-950"
+                        : m.is_read
+                        ? "bg-white hover:bg-zinc-50/80"
+                        : "bg-blue-50/40 hover:bg-blue-50/70"
+                    }`}
+                  >
+                    {/* Unread Indicator */}
+                    {!m.is_read && (
+                      <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    )}
+
+                    {/* Sender Avatar */}
+                    <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-xs text-zinc-700 shrink-0 select-none">
+                      {getAvatarInitials(m.from)}
+                    </div>
+
+                    {/* Content Preview */}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-xs truncate ${!m.is_read ? "font-bold text-zinc-950" : "font-medium text-zinc-800"}`}>
+                          {m.from.replace(/<.*>/, "").trim() || m.from}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 shrink-0 font-mono">
+                          {formatDate(m.date)}
+                        </span>
+                      </div>
+                      <div className={`text-xs truncate ${!m.is_read ? "font-semibold text-zinc-900" : "text-zinc-700 font-normal"}`}>
+                        {m.subject}
+                      </div>
+                      <p className="text-[11px] text-zinc-400 line-clamp-1 leading-relaxed font-normal">
+                        {m.snippet || "(No preview text available)"}
+                      </p>
+                      {m.has_attachments && (
+                        <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono pt-0.5">
+                          <Paperclip className="w-3 h-3 text-zinc-400" />
+                          <span>Attachment</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
-        {/* Message Items Scroll List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
-          {loadingMessages ? (
-            <div className="p-8 text-center text-xs text-zinc-400 font-mono space-y-2">
+        {/* PANE 3: Message Detail Reader (Flex-1) */}
+        <div className={`flex-1 bg-white border border-zinc-200/80 rounded-2xl flex flex-col overflow-hidden shadow-xs ${!selectedMessageId ? "hidden lg:flex" : "flex w-full"}`}>
+          {loadingDetail ? (
+            <div className="flex-1 flex items-center justify-center text-xs text-zinc-400 font-mono space-y-2">
               <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-400" />
-              <span>Loading messages...</span>
             </div>
-          ) : messages.length === 0 ? (
-            <div className="p-12 text-center text-xs text-zinc-400 font-sans space-y-2">
-              <Inbox className="w-8 h-8 mx-auto text-zinc-300 stroke-1" />
-              <p className="font-semibold text-zinc-600">No messages in {currentFolder}</p>
-              <p className="text-[11px] text-zinc-400">Incoming emails will appear here automatically.</p>
+          ) : !messageDetail ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-3 bg-zinc-50/30">
+              <div className="w-12 h-12 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center shadow-2xs">
+                <Mail className="w-6 h-6 text-zinc-400 stroke-1" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-zinc-800">No Email Selected</h3>
+                <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
+                  Select an email from the message list on the left to read its full contents, download attachments, and reply.
+                </p>
+              </div>
             </div>
           ) : (
-            messages.map((m) => {
-              const isSelected = selectedMessageId === m.id;
-              return (
-                <div
-                  key={m.id}
-                  onClick={() => handleSelectMessage(m.id)}
-                  className={`p-3.5 transition-all cursor-pointer relative flex gap-3 select-none ${
-                    isSelected
-                      ? "bg-zinc-100/90 border-l-3 border-zinc-950"
-                      : m.is_read
-                      ? "bg-white hover:bg-zinc-50/80"
-                      : "bg-blue-50/30 hover:bg-blue-50/60 font-semibold"
-                  }`}
-                >
-                  {/* Unread Indicator */}
-                  {!m.is_read && (
-                    <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-600" />
-                  )}
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+              {/* Action Toolbar Header */}
+              <div className="shrink-0 p-3.5 border-b border-zinc-200/80 flex items-center justify-between bg-zinc-50/40">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setSelectedMessageId(null)}
+                    className="lg:hidden p-1.5 rounded-lg hover:bg-zinc-200 text-zinc-600 cursor-pointer"
+                    title="Back to Message List"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleReply(false)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-zinc-100 border border-zinc-200/80 text-zinc-800 rounded-lg shadow-2xs transition-all cursor-pointer"
+                  >
+                    <CornerUpLeft className="w-3.5 h-3.5" />
+                    <span>Reply</span>
+                  </button>
+                  <button
+                    onClick={() => handleReply(true)}
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-zinc-100 border border-zinc-200/80 text-zinc-800 rounded-lg shadow-2xs transition-all cursor-pointer"
+                  >
+                    <ReplyAll className="w-3.5 h-3.5" />
+                    <span>Reply All</span>
+                  </button>
+                  <button
+                    onClick={handleForward}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-zinc-100 border border-zinc-200/80 text-zinc-800 rounded-lg shadow-2xs transition-all cursor-pointer"
+                  >
+                    <CornerUpRight className="w-3.5 h-3.5" />
+                    <span>Forward</span>
+                  </button>
+                </div>
 
-                  {/* Sender Avatar */}
-                  <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-xs text-zinc-700 shrink-0 select-none">
-                    {getAvatarInitials(m.from)}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleToggleRead(messageDetail.id, messageDetail.is_read)}
+                    className="p-2 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg cursor-pointer transition-all"
+                    title={messageDetail.is_read ? "Mark as Unread" : "Mark as Read"}
+                  >
+                    {messageDetail.is_read ? <Mail className="w-4 h-4" /> : <MailOpen className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMessage(messageDetail.id)}
+                    className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-all"
+                    title="Delete message"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Email Meta Information */}
+              <div className="p-6 border-b border-zinc-100 space-y-4 shrink-0 bg-white">
+                <h1 className="text-lg font-bold text-zinc-950 leading-tight">
+                  {messageDetail.subject}
+                </h1>
+
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-sm">
+                      {getAvatarInitials(messageDetail.from)}
+                    </div>
+                    <div className="space-y-0.5 font-sans">
+                      <div className="text-xs font-bold text-zinc-950 flex items-center gap-2">
+                        <span>{messageDetail.from}</span>
+                      </div>
+                      <div className="text-[11px] text-zinc-500 flex items-center gap-1">
+                        <span>to:</span>
+                        <span className="text-zinc-700 font-mono">{messageDetail.to.join(", ")}</span>
+                        {messageDetail.cc && messageDetail.cc.length > 0 && (
+                          <span className="text-zinc-400 text-[10px] ml-1">
+                            (cc: {messageDetail.cc.join(", ")})
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Message Preview Info */}
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`text-xs truncate ${!m.is_read ? "font-bold text-zinc-950" : "font-medium text-zinc-800"}`}>
-                        {m.from.replace(/<.*>/, "").trim() || m.from}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 shrink-0 font-mono">
-                        {formatDate(m.date)}
-                      </span>
+                  <div className="text-right shrink-0">
+                    <div className="text-xs font-mono text-zinc-500">
+                      {new Date(messageDetail.date).toLocaleString([], {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
                     </div>
-                    <div className={`text-xs truncate ${!m.is_read ? "font-semibold text-zinc-900" : "text-zinc-700 font-normal"}`}>
-                      {m.subject}
-                    </div>
-                    <p className="text-[11px] text-zinc-400 line-clamp-1 leading-relaxed font-normal">
-                      {m.snippet || "(No preview text available)"}
-                    </p>
-                    {m.has_attachments && (
-                      <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono pt-0.5">
-                        <Paperclip className="w-3 h-3 text-zinc-400" />
-                        <span>Attachment</span>
-                      </div>
-                    )}
                   </div>
                 </div>
-              );
-            })
+
+                {/* Attachments Section */}
+                {messageDetail.attachments && messageDetail.attachments.length > 0 && (
+                  <div className="pt-2">
+                    <div className="text-[11px] font-semibold text-zinc-500 mb-2 flex items-center gap-1.5">
+                      <Paperclip className="w-3.5 h-3.5" />
+                      <span>Attachments ({messageDetail.attachments.length})</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {messageDetail.attachments.map((att) => (
+                        <a
+                          key={att.id}
+                          href={api.getWebmailAttachmentUrl(messageDetail.id, att.id, currentFolder)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-xl text-xs text-zinc-800 transition-all shadow-2xs group cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-800" />
+                          <span className="font-medium truncate max-w-xs">{att.filename}</span>
+                          <span className="text-[10px] text-zinc-400 font-mono">
+                            ({formatFileSize(att.size)})
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Email Body Content */}
+              <div className="flex-1 overflow-y-auto p-6 bg-white select-text">
+                {messageDetail.body_html ? (
+                  <div
+                    className="prose prose-sm max-w-none text-zinc-900 leading-relaxed font-sans"
+                    dangerouslySetInnerHTML={{ __html: messageDetail.body_html }}
+                  />
+                ) : (
+                  <pre className="text-xs font-mono text-zinc-800 whitespace-pre-wrap leading-relaxed">
+                    {messageDetail.body_text}
+                  </pre>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>
 
-      {/* 3. Right Message Reader Pane */}
-      <div className={`flex-1 flex flex-col bg-white overflow-hidden ${!selectedMessageId ? "hidden md:flex" : "flex w-full"}`}>
-        {loadingDetail ? (
-          <div className="flex-1 flex items-center justify-center text-xs text-zinc-400 font-mono space-y-2">
-            <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-400" />
-          </div>
-        ) : !messageDetail ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-3 bg-zinc-50/40">
-            <div className="w-12 h-12 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center shadow-2xs">
-              <Mail className="w-6 h-6 text-zinc-400 stroke-1" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-semibold text-zinc-800">No Email Selected</h3>
-              <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
-                Select an email from the message list on the left to read its full contents, download attachments, and reply.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
-            {/* Action Bar Header */}
-            <div className="shrink-0 p-3.5 border-b border-zinc-200/80 flex items-center justify-between bg-white">
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setSelectedMessageId(null)}
-                  className="md:hidden p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-600 cursor-pointer"
-                  title="Back to Message List"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleReply(false)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 rounded-lg shadow-2xs transition-all cursor-pointer"
-                >
-                  <CornerUpLeft className="w-3.5 h-3.5" />
-                  <span>Reply</span>
-                </button>
-                <button
-                  onClick={() => handleReply(true)}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 rounded-lg shadow-2xs transition-all cursor-pointer"
-                >
-                  <ReplyAll className="w-3.5 h-3.5" />
-                  <span>Reply All</span>
-                </button>
-                <button
-                  onClick={handleForward}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 rounded-lg shadow-2xs transition-all cursor-pointer"
-                >
-                  <CornerUpRight className="w-3.5 h-3.5" />
-                  <span>Forward</span>
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleToggleRead(messageDetail.id, messageDetail.is_read)}
-                  className="p-2 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg cursor-pointer transition-all"
-                  title={messageDetail.is_read ? "Mark as Unread" : "Mark as Read"}
-                >
-                  {messageDetail.is_read ? <Mail className="w-4 h-4" /> : <MailOpen className="w-4 h-4" />}
-                </button>
-                <button
-                  onClick={() => handleDeleteMessage(messageDetail.id)}
-                  className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-all"
-                  title="Delete message"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Email Header Details */}
-            <div className="p-6 border-b border-zinc-100 space-y-4 shrink-0 bg-white">
-              <h1 className="text-lg font-bold text-zinc-950 leading-tight">
-                {messageDetail.subject}
-              </h1>
-
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-sm">
-                    {getAvatarInitials(messageDetail.from)}
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-bold text-zinc-950 flex items-center gap-2">
-                      <span>{messageDetail.from}</span>
-                    </div>
-                    <div className="text-[11px] text-zinc-500 flex items-center gap-1">
-                      <span>to:</span>
-                      <span className="text-zinc-700 font-mono">{messageDetail.to.join(", ")}</span>
-                      {messageDetail.cc && messageDetail.cc.length > 0 && (
-                        <span className="text-zinc-400 text-[10px] ml-1">
-                          (cc: {messageDetail.cc.join(", ")})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <div className="text-xs font-mono text-zinc-500">
-                    {new Date(messageDetail.date).toLocaleString([], {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Attachments Bar */}
-              {messageDetail.attachments && messageDetail.attachments.length > 0 && (
-                <div className="pt-2">
-                  <div className="text-[11px] font-semibold text-zinc-500 mb-2 flex items-center gap-1.5">
-                    <Paperclip className="w-3.5 h-3.5" />
-                    <span>Attachments ({messageDetail.attachments.length})</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {messageDetail.attachments.map((att) => (
-                      <a
-                        key={att.id}
-                        href={api.getWebmailAttachmentUrl(messageDetail.id, att.id, currentFolder)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-2 px-3 py-2 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-xl text-xs text-zinc-800 transition-all shadow-2xs group cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-800" />
-                        <span className="font-medium truncate max-w-xs">{att.filename}</span>
-                        <span className="text-[10px] text-zinc-400 font-mono">
-                          ({formatFileSize(att.size)})
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Email Body Content */}
-            <div className="flex-1 overflow-y-auto p-6 bg-white select-text">
-              {messageDetail.body_html ? (
-                <div
-                  className="prose prose-sm max-w-none text-zinc-900 leading-relaxed font-sans"
-                  dangerouslySetInnerHTML={{ __html: messageDetail.body_html }}
-                />
-              ) : (
-                <pre className="text-xs font-mono text-zinc-800 whitespace-pre-wrap leading-relaxed">
-                  {messageDetail.body_text}
-                </pre>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 4. Rich Compose Modal */}
+      {/* 3. RICH COMPOSE MODAL */}
       {isComposeOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="w-full sm:max-w-2xl bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl border border-zinc-200 flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
+            {/* Header */}
             <div className="px-5 py-3.5 bg-zinc-900 text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2 font-semibold text-xs">
                 <PenSquare className="w-4 h-4" />
