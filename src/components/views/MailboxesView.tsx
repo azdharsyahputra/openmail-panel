@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  AlertTriangle,
 } from "lucide-react";
 
 export function MailboxesView() {
@@ -523,16 +524,59 @@ export function MailboxesView() {
             </div>
             <form onSubmit={handleCreate} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-medium text-zinc-700 mb-1">Email Address</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-medium text-zinc-700">Email Address</label>
+                  {domains.length > 0 && (
+                    <span className="text-[10px] text-zinc-400 font-sans">
+                      {domains.length} domain{domains.length > 1 ? "s" : ""} registered
+                    </span>
+                  )}
+                </div>
                 <input
                   type="email"
-                  placeholder="user@example.com"
+                  placeholder="user@domain.com"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   disabled={creating}
                   className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
                   autoFocus
                 />
+
+                {/* Inline Domain Validation Warning */}
+                {(() => {
+                  const typedDomain = newEmail.includes("@") ? newEmail.split("@")[1].trim().toLowerCase() : "";
+                  if (!typedDomain) return null;
+                  const isRegistered = domains.some((d) => d.name.toLowerCase() === typedDomain);
+                  if (!isRegistered) {
+                    return (
+                      <div className="flex items-start gap-1.5 mt-2 p-2 bg-amber-50 border border-amber-200/80 rounded-lg text-[11px] text-amber-900 font-sans leading-tight">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-700 mt-0.5" />
+                        <div>
+                          Domain <strong className="font-mono font-semibold">@{typedDomain}</strong> belum terdaftar.
+                          <div className="text-amber-700 mt-0.5">Daftarkan domain di menu <strong>Domains & DNS</strong> terlebih dahulu sebelum membuat akun.</div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {/* Quick Domain Suggestion Pills */}
+                {domains.length > 0 && !newEmail.includes("@") && (
+                  <div className="flex flex-wrap gap-1.5 mt-2 items-center">
+                    <span className="text-[10px] text-zinc-400 font-sans">Quick domain:</span>
+                    {domains.map((dom) => (
+                      <button
+                        key={dom.name}
+                        type="button"
+                        onClick={() => setNewEmail(newEmail ? `${newEmail.split("@")[0]}@${dom.name}` : `admin@${dom.name}`)}
+                        className="px-1.5 py-0.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded text-[10px] font-mono text-zinc-700 cursor-pointer"
+                      >
+                        @{dom.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
