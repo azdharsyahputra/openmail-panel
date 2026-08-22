@@ -217,11 +217,11 @@ export function DashboardView({ onNavigate }: { onNavigate: (tab: NavTab) => voi
                 ["ok", "healthy", "live", "up"].includes(String(health.status).toLowerCase())
               );
 
-              const dovecotChecks = health?.checks?.filter((c) => c.component.startsWith("dovecot")) || [];
-              const dovecotUp = dovecotChecks.length > 0 ? dovecotChecks.every((c) => c.status === "UP") : isNominal;
+              const dovecotChecks = health?.checks?.filter((c) => ["dovecot_143", "dovecot_993", "dovecot"].includes(c.component)) || [];
+              const dovecotUp = dovecotChecks.length > 0 ? dovecotChecks.some((c) => c.status === "UP") : isNominal;
 
-              const postfixChecks = health?.checks?.filter((c) => c.component.startsWith("postfix")) || [];
-              const postfixUp = postfixChecks.length > 0 ? postfixChecks.every((c) => c.status === "UP") : isNominal;
+              const postfixChecks = health?.checks?.filter((c) => ["postfix_25", "postfix_587", "postfix"].includes(c.component)) || [];
+              const postfixUp = postfixChecks.length > 0 ? postfixChecks.some((c) => c.status === "UP") : isNominal;
 
               const pgCheck = health?.checks?.find((c) => c.component === "postgresql");
               const pgUp = pgCheck ? pgCheck.status === "UP" : isNominal;
