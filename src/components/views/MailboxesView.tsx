@@ -34,7 +34,7 @@ export function MailboxesView() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [newQuotaMB, setNewQuotaMB] = useState(1024);
+  const [newQuotaMB, setNewQuotaMB] = useState<number | "">(1024);
   const [creating, setCreating] = useState(false);
 
   // Delete Modal State
@@ -54,7 +54,7 @@ export function MailboxesView() {
 
   // Quota Edit Modal
   const [quotaEditMailbox, setQuotaEditMailbox] = useState<MailboxItem | null>(null);
-  const [editQuotaMB, setEditQuotaMB] = useState(1024);
+  const [editQuotaMB, setEditQuotaMB] = useState<number | "">(1024);
   const [updatingQuota, setUpdatingQuota] = useState(false);
   const [reconcilingQuota, setReconcilingQuota] = useState(false);
 
@@ -66,10 +66,11 @@ export function MailboxesView() {
   const handleSaveQuota = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quotaEditMailbox) return;
+    const finalMB = typeof editQuotaMB === "number" && editQuotaMB > 0 ? editQuotaMB : 1024;
     try {
       setUpdatingQuota(true);
-      await api.updateMailboxQuota(quotaEditMailbox.email, editQuotaMB);
-      toast.success("Quota Updated", `Set storage limit for ${quotaEditMailbox.email} to ${editQuotaMB} MB.`);
+      await api.updateMailboxQuota(quotaEditMailbox.email, finalMB);
+      toast.success("Quota Updated", `Set storage limit for ${quotaEditMailbox.email} to ${finalMB} MB.`);
       setQuotaEditMailbox(null);
       await loadData();
     } catch (err: unknown) {
@@ -123,14 +124,16 @@ export function MailboxesView() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail || !newPassword) return;
+    const finalMB = typeof newQuotaMB === "number" && newQuotaMB > 0 ? newQuotaMB : 1024;
     try {
       setCreating(true);
-      const quotaBytes = newQuotaMB * 1024 * 1024;
+      const quotaBytes = finalMB * 1024 * 1024;
       await api.createMailbox(newEmail.trim(), newPassword, quotaBytes);
       await api.provisionMailbox(newEmail.trim()).catch(() => {});
-      toast.success("Mailbox Created", `Account ${newEmail.trim()} provisioned with ${newQuotaMB}MB quota.`);
+      toast.success("Mailbox Created", `Account ${newEmail.trim()} provisioned with ${finalMB}MB quota.`);
       setNewEmail("");
       setNewPassword("");
+      setNewQuotaMB(1024);
       setShowAddModal(false);
       await loadData();
     } catch (err: unknown) {
@@ -597,8 +600,17 @@ export function MailboxesView() {
                   type="number"
                   min={50}
                   max={50000}
+                  placeholder="1024"
                   value={newQuotaMB}
-                  onChange={(e) => setNewQuotaMB(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setNewQuotaMB("");
+                    } else {
+                      const num = parseInt(val, 10);
+                      if (!isNaN(num)) setNewQuotaMB(num);
+                    }
+                  }}
                   disabled={creating}
                   className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
                 />
@@ -755,8 +767,17 @@ export function MailboxesView() {
                   type="number"
                   min={50}
                   max={1000000}
+                  placeholder="1024"
                   value={editQuotaMB}
-                  onChange={(e) => setEditQuotaMB(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setEditQuotaMB("");
+                    } else {
+                      const num = parseInt(val, 10);
+                      if (!isNaN(num)) setEditQuotaMB(num);
+                    }
+                  }}
                   disabled={updatingQuota || reconcilingQuota}
                   className="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:bg-white focus:border-zinc-950 font-mono text-zinc-950"
                   autoFocus
