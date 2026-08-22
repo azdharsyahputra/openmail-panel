@@ -14,8 +14,10 @@ import { SecurityView } from "@/components/views/SecurityView";
 import { MonitoringView } from "@/components/views/MonitoringView";
 import { SystemView } from "@/components/views/SystemView";
 import { ConfigurationsView } from "@/components/views/ConfigurationsView";
+import { WebmailView } from "@/components/views/WebmailView";
 
 const VALID_TABS: NavTab[] = [
+  "webmail",
   "dashboard",
   "domains",
   "mailboxes",
@@ -28,7 +30,8 @@ const VALID_TABS: NavTab[] = [
 ];
 
 export default function MainPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, hasRole } = useAuth();
+  const isAdmin = hasRole("admin", "operator");
 
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
     if (typeof window !== "undefined") {
@@ -37,8 +40,14 @@ export default function MainPage() {
       const saved = localStorage.getItem("openmail_active_tab") as NavTab;
       if (VALID_TABS.includes(saved)) return saved;
     }
-    return "dashboard";
+    return "webmail";
   });
+
+  useEffect(() => {
+    if (user && !isAdmin && activeTab !== "webmail") {
+      setActiveTab("webmail");
+    }
+  }, [user, isAdmin, activeTab]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && user) {
@@ -80,7 +89,8 @@ export default function MainPage() {
       <Navbar onNavigate={setActiveTab} />
       <div className="flex-1 flex overflow-hidden px-5 py-4 gap-5 h-[calc(100vh-4rem)]">
         <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} />
-        <main className="flex-1 h-full bg-white rounded-xl border border-zinc-200/80 shadow-2xs p-6 md:p-8 overflow-y-auto select-text">
+        <main className={`flex-1 h-full bg-white rounded-xl border border-zinc-200/80 shadow-2xs overflow-y-auto select-text ${activeTab === "webmail" ? "p-0 overflow-hidden" : "p-6 md:p-8"}`}>
+          {activeTab === "webmail" && <WebmailView />}
           {activeTab === "dashboard" && <DashboardView onNavigate={setActiveTab} />}
           {activeTab === "domains" && <DomainsView />}
           {activeTab === "mailboxes" && <MailboxesView />}

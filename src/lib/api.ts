@@ -578,6 +578,129 @@ class ApiClient {
     });
     return res.settings || {};
   }
+
+  // Webmail Methods
+  public async getWebmailFolders(): Promise<{ email: string; folders: WebmailFolder[] }> {
+    return this.request<{ email: string; folders: WebmailFolder[] }>("/api/v1/webmail/folders");
+  }
+
+  public async getWebmailMessages(
+    folder: string = "inbox",
+    page: number = 1,
+    limit: number = 25,
+    q: string = ""
+  ): Promise<{ folder: string; page: number; limit: number; total: number; messages: WebmailMessageSummary[] }> {
+    const params = new URLSearchParams({
+      folder,
+      page: String(page),
+      limit: String(limit),
+    });
+    if (q) params.set("q", q);
+    return this.request<{ folder: string; page: number; limit: number; total: number; messages: WebmailMessageSummary[] }>(
+      `/api/v1/webmail/messages?${params.toString()}`
+    );
+  }
+
+  public async getWebmailMessageDetail(id: string, folder: string = "inbox"): Promise<WebmailMessageDetail> {
+    return this.request<WebmailMessageDetail>(
+      `/api/v1/webmail/messages/${encodeURIComponent(id)}?folder=${encodeURIComponent(folder)}`
+    );
+  }
+
+  public async sendWebmailMessage(data: SendWebmailRequest): Promise<WebmailMessageSummary> {
+    return this.request<WebmailMessageSummary>("/api/v1/webmail/send", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public async markWebmailMessageRead(id: string, read: boolean, folder: string = "inbox"): Promise<{ success: boolean; read: boolean }> {
+    return this.request<{ success: boolean; read: boolean }>(
+      `/api/v1/webmail/messages/${encodeURIComponent(id)}/read?folder=${encodeURIComponent(folder)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ read }),
+      }
+    );
+  }
+
+  public async moveWebmailMessage(id: string, srcFolder: string, dstFolder: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/api/v1/webmail/messages/${encodeURIComponent(id)}/move`, {
+      method: "POST",
+      body: JSON.stringify({ src_folder: srcFolder, dst_folder: dstFolder }),
+    });
+  }
+
+  public async deleteWebmailMessage(id: string, folder: string = "inbox"): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(
+      `/api/v1/webmail/messages/${encodeURIComponent(id)}?folder=${encodeURIComponent(folder)}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  public getWebmailAttachmentUrl(id: string, attId: string, folder: string = "inbox"): string {
+    return `/api/v1/webmail/messages/${encodeURIComponent(id)}/attachments/${encodeURIComponent(attId)}?folder=${encodeURIComponent(folder)}`;
+  }
+}
+
+export interface WebmailFolder {
+  id: string;
+  name: string;
+  display_name: string;
+  total_count: number;
+  unread_count: number;
+  icon: string;
+}
+
+export interface WebmailAttachment {
+  id: string;
+  filename: string;
+  content_type: string;
+  size: number;
+  content_id?: string;
+}
+
+export interface WebmailMessageSummary {
+  id: string;
+  folder: string;
+  message_id: string;
+  from: string;
+  to: string[];
+  subject: string;
+  date: string;
+  is_read: boolean;
+  is_starred?: boolean;
+  has_attachments: boolean;
+  size: number;
+  snippet: string;
+}
+
+export interface WebmailMessageDetail extends WebmailMessageSummary {
+  cc?: string[];
+  bcc?: string[];
+  reply_to?: string;
+  body_text: string;
+  body_html: string;
+  attachments: WebmailAttachment[];
+  headers?: Record<string, string[]>;
+}
+
+export interface SendWebmailRequest {
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  subject: string;
+  body_text?: string;
+  body_html?: string;
+  in_reply_to?: string;
+  references?: string;
+  attachments?: {
+    filename: string;
+    content_type: string;
+    data_b64: string;
+  }[];
 }
 
 export const api = new ApiClient();
