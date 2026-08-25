@@ -30,6 +30,9 @@ import {
   ChevronRight,
   Download,
   X,
+  Minus,
+  Maximize2,
+  Minimize2,
   ArrowLeft,
   LogOut,
   User,
@@ -56,14 +59,17 @@ export function WebmailView({ user, onLogout }: WebmailViewProps) {
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>(user?.email || "");
 
-  // Compose State
+  // Compose State (Gmail-style Docked Window)
   const [isComposeOpen, setIsComposeOpen] = useState<boolean>(false);
+  const [isComposeMinimized, setIsComposeMinimized] = useState<boolean>(false);
+  const [isComposeMaximized, setIsComposeMaximized] = useState<boolean>(false);
   const [composeTo, setComposeTo] = useState<string>("");
   const [composeCc, setComposeCc] = useState<string>("");
   const [composeBcc, setComposeBcc] = useState<string>("");
   const [composeSubject, setComposeSubject] = useState<string>("");
   const [composeBody, setComposeBody] = useState<string>("");
-  const [showCcBcc, setShowCcBcc] = useState<boolean>(false);
+  const [showCc, setShowCc] = useState<boolean>(false);
+  const [showBcc, setShowBcc] = useState<boolean>(false);
   const [sending, setSending] = useState<boolean>(false);
   const [composeAttachments, setComposeAttachments] = useState<{ filename: string; contentType: string; dataB64: string; size: number }[]>([]);
 
@@ -221,7 +227,10 @@ export function WebmailView({ user, onLogout }: WebmailViewProps) {
     setComposeBcc("");
     setComposeSubject("");
     setComposeBody("");
-    setShowCcBcc(false);
+    setShowCc(false);
+    setShowBcc(false);
+    setIsComposeMinimized(false);
+    setIsComposeMaximized(false);
     setComposeAttachments([]);
   };
 
@@ -232,7 +241,7 @@ export function WebmailView({ user, onLogout }: WebmailViewProps) {
     setComposeTo(recipient);
     if (all && messageDetail.cc && messageDetail.cc.length > 0) {
       setComposeCc(messageDetail.cc.join(", "));
-      setShowCcBcc(true);
+      setShowCc(true);
     }
     const sub = messageDetail.subject.startsWith("Re:") ? messageDetail.subject : `Re: ${messageDetail.subject}`;
     setComposeSubject(sub);
@@ -736,164 +745,250 @@ export function WebmailView({ user, onLogout }: WebmailViewProps) {
         </div>
       </div>
 
-      {/* 3. RICH COMPOSE MODAL */}
+      {/* 3. GMAIL-STYLE DOCKED COMPOSE WIDGET */}
       {isComposeOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-2xl bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl border border-zinc-200 flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Header */}
-            <div className="px-5 py-3.5 bg-zinc-900 text-white flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2 font-semibold text-xs">
-                <PenSquare className="w-4 h-4" />
-                <span>New Message</span>
+        <div
+          className={`fixed z-50 transition-all duration-200 ease-out ${
+            isComposeMaximized
+              ? "inset-3 sm:inset-8 flex flex-col"
+              : isComposeMinimized
+              ? "bottom-0 right-4 sm:right-8 w-72"
+              : "bottom-0 right-2 sm:right-8 w-[96vw] sm:w-[560px]"
+          }`}
+        >
+          <div
+            className={`w-full bg-white rounded-t-2xl shadow-2xl border border-zinc-200/90 flex flex-col overflow-hidden ${
+              isComposeMaximized
+                ? "h-full rounded-2xl"
+                : isComposeMinimized
+                ? "h-11"
+                : "h-[540px] max-h-[85vh]"
+            }`}
+          >
+            {/* Window Header */}
+            <div
+              onClick={() => {
+                if (isComposeMinimized) setIsComposeMinimized(false);
+              }}
+              className="h-10 px-4 bg-zinc-100/90 border-b border-zinc-200/80 flex items-center justify-between shrink-0 select-none cursor-pointer hover:bg-zinc-200/60 transition-colors"
+            >
+              <div className="flex items-center gap-2 font-semibold text-xs text-zinc-800 truncate">
+                <PenSquare className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span className="truncate">{composeSubject.trim() || "New Message"}</span>
               </div>
-              <button
-                onClick={() => setIsComposeOpen(false)}
-                className="p-1 rounded-lg hover:bg-white/10 text-white/80 hover:text-white cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                {/* Minimize Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsComposeMinimized(!isComposeMinimized);
+                    if (isComposeMaximized) setIsComposeMaximized(false);
+                  }}
+                  className="p-1 rounded-md hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 transition-colors cursor-pointer"
+                  title={isComposeMinimized ? "Expand" : "Minimize"}
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                {/* Maximize Button */}
+                {!isComposeMinimized && (
+                  <button
+                    type="button"
+                    onClick={() => setIsComposeMaximized(!isComposeMaximized)}
+                    className="p-1 rounded-md hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 transition-colors cursor-pointer"
+                    title={isComposeMaximized ? "Exit Fullscreen" : "Full Screen"}
+                  >
+                    {isComposeMaximized ? (
+                      <Minimize2 className="w-3.5 h-3.5" />
+                    ) : (
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                )}
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsComposeOpen(false);
+                    resetCompose();
+                  }}
+                  className="p-1 rounded-md hover:bg-red-100 hover:text-red-600 text-zinc-500 transition-colors cursor-pointer"
+                  title="Save & Close"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
-            {/* Compose Form */}
-            <form onSubmit={handleSendMessage} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              <div className="p-4 space-y-2.5 border-b border-zinc-100 shrink-0 text-xs font-sans">
-                {/* To Field */}
-                <div className="flex items-center gap-2">
-                  <span className="w-12 text-zinc-400 font-semibold text-right">To:</span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Recipient email address (e.g. user@example.com)"
-                    value={composeTo}
-                    onChange={(e) => setComposeTo(e.target.value)}
-                    className="flex-1 px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs outline-none focus:border-zinc-950 focus:bg-white transition-all font-mono"
-                  />
-                  {!showCcBcc && (
-                    <button
-                      type="button"
-                      onClick={() => setShowCcBcc(true)}
-                      className="text-[11px] text-zinc-400 hover:text-zinc-700 font-semibold cursor-pointer"
-                    >
-                      Cc/Bcc
-                    </button>
-                  )}
-                </div>
+            {/* Window Content (Hidden when minimized) */}
+            {!isComposeMinimized && (
+              <form onSubmit={handleSendMessage} className="flex-1 flex flex-col min-h-0 bg-white">
+                {/* Recipients & Subject (Gmail Borderless Rows) */}
+                <div className="flex flex-col shrink-0 text-xs font-sans">
+                  {/* To Field */}
+                  <div className="flex items-center px-4 py-2 border-b border-zinc-100 gap-2">
+                    <span className="w-10 text-zinc-400 font-medium shrink-0">To</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Recipients (e.g. user@example.com)"
+                      value={composeTo}
+                      onChange={(e) => setComposeTo(e.target.value)}
+                      className="flex-1 bg-transparent text-xs text-zinc-900 focus:outline-none placeholder:text-zinc-400 font-sans"
+                    />
+                    <div className="flex items-center gap-1 text-[11px] font-medium text-zinc-500">
+                      {!showCc && (
+                        <button
+                          type="button"
+                          onClick={() => setShowCc(true)}
+                          className="hover:text-zinc-900 hover:bg-zinc-100 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                        >
+                          Cc
+                        </button>
+                      )}
+                      {!showBcc && (
+                        <button
+                          type="button"
+                          onClick={() => setShowBcc(true)}
+                          className="hover:text-zinc-900 hover:bg-zinc-100 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                        >
+                          Bcc
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Optional Cc / Bcc */}
-                {showCcBcc && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="w-12 text-zinc-400 font-semibold text-right">Cc:</span>
+                  {/* Cc Field */}
+                  {showCc && (
+                    <div className="flex items-center px-4 py-2 border-b border-zinc-100 gap-2 animate-in fade-in duration-100">
+                      <span className="w-10 text-zinc-400 font-medium shrink-0">Cc</span>
                       <input
                         type="text"
-                        placeholder="Carbon copy recipients..."
+                        placeholder="Carbon copy recipients"
                         value={composeCc}
                         onChange={(e) => setComposeCc(e.target.value)}
-                        className="flex-1 px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs outline-none focus:border-zinc-950 focus:bg-white transition-all font-mono"
+                        className="flex-1 bg-transparent text-xs text-zinc-900 focus:outline-none placeholder:text-zinc-400 font-sans"
                       />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-12 text-zinc-400 font-semibold text-right">Bcc:</span>
+                  )}
+
+                  {/* Bcc Field */}
+                  {showBcc && (
+                    <div className="flex items-center px-4 py-2 border-b border-zinc-100 gap-2 animate-in fade-in duration-100">
+                      <span className="w-10 text-zinc-400 font-medium shrink-0">Bcc</span>
                       <input
                         type="text"
-                        placeholder="Blind carbon copy recipients..."
+                        placeholder="Blind carbon copy recipients"
                         value={composeBcc}
                         onChange={(e) => setComposeBcc(e.target.value)}
-                        className="flex-1 px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs outline-none focus:border-zinc-950 focus:bg-white transition-all font-mono"
+                        className="flex-1 bg-transparent text-xs text-zinc-900 focus:outline-none placeholder:text-zinc-400 font-sans"
                       />
                     </div>
-                  </>
+                  )}
+
+                  {/* Subject Field */}
+                  <div className="flex items-center px-4 py-2 border-b border-zinc-100">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Subject"
+                      value={composeSubject}
+                      onChange={(e) => setComposeSubject(e.target.value)}
+                      className="w-full bg-transparent text-xs font-medium text-zinc-900 focus:outline-none placeholder:text-zinc-400 font-sans"
+                    />
+                  </div>
+                </div>
+
+                {/* Message Body Canvas */}
+                <div className="flex-1 min-h-0 p-4">
+                  <textarea
+                    required
+                    placeholder="Write your email here... (⌘+Enter to send)"
+                    value={composeBody}
+                    onChange={(e) => setComposeBody(e.target.value)}
+                    onKeyDown={(e) => {
+                      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                        e.preventDefault();
+                        handleSendMessage(e);
+                      }
+                    }}
+                    className="w-full h-full resize-none outline-none text-xs text-zinc-900 font-sans leading-relaxed placeholder:text-zinc-400 bg-transparent"
+                  />
+                </div>
+
+                {/* Attachments Preview Chips */}
+                {composeAttachments.length > 0 && (
+                  <div className="px-4 py-2 bg-zinc-50 border-t border-zinc-100 flex flex-wrap gap-2 shrink-0">
+                    {composeAttachments.map((att, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-zinc-200 rounded-lg text-xs text-zinc-800 shadow-2xs"
+                      >
+                        <Paperclip className="w-3 h-3 text-zinc-400" />
+                        <span className="truncate max-w-[150px] font-medium">{att.filename}</span>
+                        <span className="text-[10px] text-zinc-400 font-mono">
+                          ({formatFileSize(att.size)})
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(idx)}
+                          className="text-zinc-400 hover:text-red-600 p-0.5 rounded cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
 
-                {/* Subject Field */}
-                <div className="flex items-center gap-2">
-                  <span className="w-12 text-zinc-400 font-semibold text-right">Subject:</span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Email subject..."
-                    value={composeSubject}
-                    onChange={(e) => setComposeSubject(e.target.value)}
-                    className="flex-1 px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs outline-none focus:border-zinc-950 focus:bg-white transition-all font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* Message Body Input */}
-              <div className="flex-1 min-h-0 p-4">
-                <textarea
-                  required
-                  placeholder="Write your email message here..."
-                  value={composeBody}
-                  onChange={(e) => setComposeBody(e.target.value)}
-                  className="w-full h-full resize-none outline-none text-xs text-zinc-900 font-sans leading-relaxed placeholder:text-zinc-400"
-                />
-              </div>
-
-              {/* Attachments Preview Chips */}
-              {composeAttachments.length > 0 && (
-                <div className="px-4 py-2 bg-zinc-50 border-t border-zinc-200 flex flex-wrap gap-2 shrink-0">
-                  {composeAttachments.map((att, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 px-2.5 py-1 bg-white border border-zinc-200 rounded-lg text-xs text-zinc-800 shadow-2xs"
+                {/* Gmail-Style Bottom Toolbar */}
+                <div className="px-4 py-2.5 bg-white border-t border-zinc-100 flex items-center justify-between shrink-0 select-none">
+                  {/* Left Side: Send Button & Tools */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      disabled={sending}
+                      className="flex items-center gap-2 px-5 py-2 bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer"
                     >
-                      <Paperclip className="w-3 h-3 text-zinc-400" />
-                      <span className="truncate max-w-[150px]">{att.filename}</span>
-                      <span className="text-[10px] text-zinc-400 font-mono">
-                        ({formatFileSize(att.size)})
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeAttachment(idx)}
-                        className="text-zinc-400 hover:text-red-600 cursor-pointer"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                      <Send className="w-3.5 h-3.5" />
+                      <span>{sending ? "Sending..." : "Send"}</span>
+                    </button>
 
-              {/* Modal Footer Actions */}
-              <div className="px-4 py-3 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    multiple
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-lg text-xs font-semibold text-zinc-700 shadow-2xs transition-all cursor-pointer"
-                  >
-                    <Paperclip className="w-3.5 h-3.5" />
-                    <span>Attach Files</span>
-                  </button>
-                </div>
+                    <div className="h-4 w-px bg-zinc-200" />
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsComposeOpen(false)}
-                    className="px-4 py-2 text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="flex items-center gap-1.5 px-5 py-2 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>{sending ? "Sending..." : "Send Message"}</span>
-                  </button>
+                    <input
+                      type="file"
+                      multiple
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors cursor-pointer"
+                      title="Attach files"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Right Side: Discard Draft */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsComposeOpen(false);
+                        resetCompose();
+                      }}
+                      className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
+                      title="Discard draft"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            )}
           </div>
         </div>
       )}
