@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Internal task tracking
+task.md
+tasks.md
+task*.md
+.task*
