@@ -72,10 +72,12 @@ export function LoginView() {
       <div className="w-full max-w-sm bg-white border border-zinc-200/80 rounded-2xl p-8 shadow-xs">
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="w-10 h-10 rounded-xl bg-zinc-950 flex items-center justify-center text-white font-bold text-sm mx-auto mb-3 shadow-xs tracking-tight">
-            M
+          <div className="w-11 h-11 rounded-2xl bg-zinc-950 flex items-center justify-center text-white font-bold text-sm mx-auto mb-3 shadow-md tracking-tight border border-zinc-800">
+            <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+            </svg>
           </div>
-          <h1 className="text-lg font-semibold text-zinc-950 tracking-tight">MailOpen Control Plane</h1>
+          <h1 className="text-lg font-semibold text-zinc-950 tracking-tight">OpenMail Control Plane</h1>
           <p className="text-xs text-zinc-500 mt-0.5">Authenticate with local database or LDAP directory</p>
         </div>
 

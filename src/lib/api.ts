@@ -1,4 +1,4 @@
-// MailOpen REST API Client & Contract Interfaces
+// OpenMail REST API Client & Contract Interfaces
 
 export interface UserProfile {
   id: string;

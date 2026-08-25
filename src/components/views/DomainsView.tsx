@@ -524,7 +524,7 @@ export function DomainsView() {
                         host: "mail",
                         value: currentIP || "<YOUR_SERVER_IPV4>",
                         proxyStatus: "DNS only",
-                        description: `Points mail.${selectedDomain} to MailOpen server IPv4`,
+                        description: `Points mail.${selectedDomain} to OpenMail server IPv4`,
                       });
 
                       // 2. MX Record

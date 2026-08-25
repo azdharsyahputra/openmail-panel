@@ -15,8 +15,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MailOpen Control Plane | Web Admin",
-  description: "Enterprise Mail Server Management & Control Plane for Postfix, Dovecot, OpenLDAP, and OpenDKIM",
+  title: "OpenMail | Modern Mail Server & Webmail",
+  description: "Autonomous Self-Hosted Mail Server Control Plane & Webmail client for Postfix, Dovecot, OpenLDAP, and OpenDKIM",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

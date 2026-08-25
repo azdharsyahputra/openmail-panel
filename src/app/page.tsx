@@ -68,7 +68,7 @@ export default function MainPage() {
         <div className="flex flex-col items-center gap-3">
           <div className="w-7 h-7 border-2 border-zinc-300 border-t-zinc-950 rounded-full animate-spin" />
           <span className="text-xs font-medium text-zinc-500 font-mono">
-            Loading MailOpen...
+            Loading OpenMail...
           </span>
         </div>
       </div>

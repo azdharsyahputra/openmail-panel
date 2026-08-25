@@ -158,7 +158,7 @@ export function IdentityView() {
           <tbody className="divide-y divide-zinc-100">
             <tr className="hover:bg-zinc-50/50 transition-colors">
               <td className="py-3 px-6 font-semibold text-zinc-900 text-left">
-                cn=mail-admins,ou=groups,dc=mailopen,dc=internal
+                cn=mail-admins,ou=groups,dc=openmail,dc=internal
               </td>
               <td className="py-3 px-4 text-center">
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-zinc-950 text-white border border-zinc-950">
@@ -171,7 +171,7 @@ export function IdentityView() {
             </tr>
             <tr className="hover:bg-zinc-50/50 transition-colors">
               <td className="py-3 px-6 font-semibold text-zinc-900 text-left">
-                cn=mail-operators,ou=groups,dc=mailopen,dc=internal
+                cn=mail-operators,ou=groups,dc=openmail,dc=internal
               </td>
               <td className="py-3 px-4 text-center">
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-zinc-100 text-zinc-800 border border-zinc-200">
@@ -184,7 +184,7 @@ export function IdentityView() {
             </tr>
             <tr className="hover:bg-zinc-50/50 transition-colors">
               <td className="py-3 px-6 font-semibold text-zinc-900 text-left">
-                cn=mail-auditors,ou=groups,dc=mailopen,dc=internal
+                cn=mail-auditors,ou=groups,dc=openmail,dc=internal
               </td>
               <td className="py-3 px-4 text-center">
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-zinc-100 text-zinc-700 border border-zinc-200">

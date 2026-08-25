@@ -35,7 +35,7 @@ export function SystemView() {
     setCreatingBackup(true);
     setTimeout(() => {
       setCreatingBackup(false);
-      const filename = `backup-mailopen-${Date.now()}.tar.gz (Encrypted AES-256-GCM)`;
+      const filename = `backup-openmail-${Date.now()}.tar.gz (Encrypted AES-256-GCM)`;
       setBackupSuccess(filename);
       toast.success("Encrypted Snapshot Created", filename);
     }, 1000);
@@ -81,7 +81,7 @@ export function SystemView() {
       {/* Engine Status Banner */}
       <div className="p-5 bg-white border border-zinc-200/80 rounded-xl flex justify-between items-center text-xs font-mono shadow-2xs">
         <div>
-          <span className="font-bold text-zinc-950 text-sm">MailOpen Engine Cluster</span>
+          <span className="font-bold text-zinc-950 text-sm">OpenMail Engine Cluster</span>
           <span className="text-zinc-500 block text-[11px] mt-0.5">
             Core: v0.9.0-GA · Architecture: amd64/arm64 · Schema: v003_applied
           </span>

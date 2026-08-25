@@ -356,7 +356,7 @@ export function WebmailView({ user, onLogout }: WebmailViewProps) {
           </div>
           <div>
             <div className="text-sm font-bold text-zinc-950 tracking-tight flex items-center gap-1.5">
-              <span>MailOpen</span>
+              <span>OpenMail</span>
               <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[10px] font-bold uppercase font-mono">
                 Webmail
               </span>

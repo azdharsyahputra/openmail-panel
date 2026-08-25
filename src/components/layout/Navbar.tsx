@@ -120,7 +120,7 @@ export function Navbar({ onNavigate }: { onNavigate?: (tab: NavTab) => void }) {
               </svg>
             </div>
             <div className="flex items-baseline gap-2.5">
-              <span className="font-bold text-zinc-950 text-base tracking-tight">MailOpen</span>
+              <span className="font-bold text-zinc-950 text-base tracking-tight">OpenMail</span>
               <span className="text-zinc-300 font-light text-sm">/</span>
               <span className="text-xs text-zinc-500 font-medium font-mono">Control Plane</span>
             </div>
@@ -328,7 +328,7 @@ export function Navbar({ onNavigate }: { onNavigate?: (tab: NavTab) => void }) {
                   to close
                 </span>
               </div>
-              <span className="font-mono text-[10px] text-zinc-400">MailOpen Global Index</span>
+              <span className="font-mono text-[10px] text-zinc-400">OpenMail Global Index</span>
             </div>
           </div>
         </div>

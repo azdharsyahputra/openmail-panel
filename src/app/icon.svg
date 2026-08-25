@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#09090b"/>
+      <stop offset="100%" stop-color="#18181b"/>
+    </linearGradient>
+    <linearGradient id="mailFlap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="mailBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="accentGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect x="2" y="2" width="508" height="508" rx="110" stroke="#27272a" stroke-width="4" fill="none"/>
+  
+  <!-- Subtle Ambient Glow -->
+  <circle cx="256" cy="180" r="140" fill="url(#accentGlow)" filter="blur(30px)"/>
+
+  <!-- OpenMail Emblem -->
+  <g filter="url(#shadow)">
+    <!-- Envelope Lower Tray -->
+    <path d="M104 224 L256 328 L408 224 V356 C408 373.673 393.673 388 376 388 H136 C118.327 388 104 373.673 104 356 V224 Z" fill="url(#mailBody)"/>
+    
+    <!-- Letter / Inner Content Slide -->
+    <rect x="132" y="160" width="248" height="130" rx="14" fill="#f8fafc"/>
+    <rect x="160" y="196" width="128" height="12" rx="6" fill="#94a3b8"/>
+    <rect x="160" y="220" width="192" height="12" rx="6" fill="#cbd5e1"/>
+
+    <!-- Left & Right Fold Overlays -->
+    <path d="M104 224 L216 300 L104 384 V224 Z" fill="#94a3b8" fill-opacity="0.25"/>
+    <path d="M408 224 L296 300 L408 384 V224 Z" fill="#64748b" fill-opacity="0.35"/>
+    <path d="M104 388 L256 284 L408 388 Z" fill="#e2e8f0" fill-opacity="0.9"/>
+
+    <!-- Dynamic Vibrant Open Flap -->
+    <path d="M104 224 C104 224 200 132 256 124 C312 132 408 224 408 224 L256 312 Z" fill="url(#mailFlap)"/>
+          
+    <!-- Cyan Top Highlight Accent -->
+    <path d="M128 210 C180 148 230 128 256 126 C282 128 332 148 384 210" stroke="#7dd3fc" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>
